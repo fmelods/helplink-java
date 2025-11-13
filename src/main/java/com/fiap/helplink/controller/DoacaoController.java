@@ -17,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/doacoes")
 @Tag(name = "Doações", description = "Endpoints de gerenciamento de doações")
-@SecurityRequirement(name = "Bearer JWT")
+@SecurityRequirement(name = "bearerAuth")
 public class DoacaoController {
 
     @Autowired

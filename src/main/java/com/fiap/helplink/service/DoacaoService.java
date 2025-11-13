@@ -5,7 +5,7 @@ import com.fiap.helplink.dto.DoacaoDTO;
 import com.fiap.helplink.model.*;
 import com.fiap.helplink.repository.*;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,32 +14,45 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class DoacaoService {
 
-    @Autowired private DoacaoRepository doacaoRepository;
-    @Autowired private UsuarioRepository usuarioRepository;
-    @Autowired private InstituicaoRepository instituicaoRepository;
-    @Autowired private ItemRepository itemRepository;
-    @Autowired private DoacaoItemRepository doacaoItemRepository; // não é usado diretamente, mas pode ser útil
-    @Autowired private ImpactoRepository impactoRepository;        // idem
+    private final DoacaoRepository doacaoRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final InstituicaoRepository instituicaoRepository;
+    private final ItemRepository itemRepository;
+    private final DoacaoItemRepository doacaoItemRepository;
+    private final ImpactoRepository impactoRepository;
 
-    // LISTAR TODAS
+    // ============================
+    // LISTAR TODAS (CORRIGIDO)
+    // ============================
     @Transactional(readOnly = true)
     public List<DoacaoDTO> listarTodas() {
+        // Agora findAll usa @EntityGraph automaticamente
         return doacaoRepository.findAll().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
-    // BUSCAR POR ID
+    // ============================
+    // BUSCAR POR ID (CORRIGIDO)
+    // ============================
     @Transactional(readOnly = true)
     public DoacaoDTO encontrarPorId(Long id) {
         Doacao doacao = doacaoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Doação não encontrada com ID: " + id));
+
+        // força carregar usuário e instituição antes de fechar a sessão
+        doacao.getUsuario().getNome();
+        doacao.getInstituicao().getNome();
+
         return toDTO(doacao);
     }
 
+    // ============================
     // CRIAR DOAÇÃO
+    // ============================
     @Transactional
     public DoacaoDTO criar(Long usuarioId, DoacaoCreateDTO dto) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -55,26 +68,26 @@ public class DoacaoService {
                 .dtSolicitacao(LocalDateTime.now())
                 .build();
 
-        // segurança extra: se por algum motivo vier nulo, inicializa
+        // segurança extra contra listas nulas
         if (doacao.getDoacaoItens() == null) {
             doacao.setDoacaoItens(new java.util.ArrayList<>());
         }
 
-        // adicionar itens (cascade ALL salva junto)
+        // adicionar itens
         dto.getIdItens().forEach(idItem -> {
             Item item = itemRepository.findById(idItem)
                     .orElseThrow(() -> new EntityNotFoundException("Item não encontrado com ID: " + idItem));
 
-            DoacaoItem doacaoItem = DoacaoItem.builder()
+            DoacaoItem di = DoacaoItem.builder()
                     .doacao(doacao)
                     .item(item)
-                    .qtde(1.0) // evita ORA-01400 em QTDE
+                    .qtde(1.0)
                     .build();
 
-            doacao.getDoacaoItens().add(doacaoItem);
+            doacao.getDoacaoItens().add(di);
         });
 
-        // impacto padrão (cascade ALL salva junto)
+        // impacto padrão
         Impacto impacto = Impacto.builder()
                 .doacao(doacao)
                 .pontuacao(10.0)
@@ -82,11 +95,13 @@ public class DoacaoService {
                 .build();
         doacao.setImpacto(impacto);
 
-        Doacao doacaoSalva = doacaoRepository.save(doacao);
-        return toDTO(doacaoSalva);
+        Doacao salva = doacaoRepository.save(doacao);
+        return toDTO(salva);
     }
 
+    // ============================
     // ATUALIZAR STATUS
+    // ============================
     @Transactional
     public DoacaoDTO atualizar(Long id, String novoStatus) {
         Doacao doacao = doacaoRepository.findById(id)
@@ -101,20 +116,21 @@ public class DoacaoService {
         if ("CONCLUIDA".equals(statusUpper)) {
             doacao.setDtConfirmacao(LocalDateTime.now());
         } else if ("ABERTA".equals(statusUpper)) {
-            // opcional: ao voltar para ABERTA, zera confirmação
             doacao.setDtConfirmacao(null);
         }
 
         return toDTO(doacaoRepository.save(doacao));
     }
 
-    // DELETAR DOAÇÃO
+    // ============================
+    // DELETAR
+    // ============================
     @Transactional
     public void deletar(Long id) {
         Doacao doacao = doacaoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Doação não encontrada com ID: " + id));
 
-        // força carregamento das coleções/associações para o Hibernate aplicar o cascade/orphanRemoval
+        // força carregar associações para permitir cascade delete
         doacao.getDoacaoItens().size();
         doacao.getAgendamentos().size();
         if (doacao.getImpacto() != null) {
@@ -124,18 +140,20 @@ public class DoacaoService {
         doacaoRepository.delete(doacao);
     }
 
-    // CONVERSÃO PARA DTO (itens/impacto podem ser mapeados depois, se desejar)
-    private DoacaoDTO toDTO(Doacao doacao) {
+    // ============================
+    // CONVERSÃO PARA DTO
+    // ============================
+    private DoacaoDTO toDTO(Doacao d) {
         return DoacaoDTO.builder()
-                .idDoacao(doacao.getIdDoacao())
-                .status(doacao.getStatus())
-                .dtSolicitacao(doacao.getDtSolicitacao())
-                .dtConfirmacao(doacao.getDtConfirmacao())
-                .usuarioId(doacao.getUsuario().getIdUsuario())
-                .usuarioNome(doacao.getUsuario().getNome())
-                .instituicaoId(doacao.getInstituicao().getIdInstituicao())
-                .instituicaoNome(doacao.getInstituicao().getNome())
-                .impacto(null) // mantenho null para não expandir aqui
+                .idDoacao(d.getIdDoacao())
+                .status(d.getStatus())
+                .dtSolicitacao(d.getDtSolicitacao())
+                .dtConfirmacao(d.getDtConfirmacao())
+                .usuarioId(d.getUsuario().getIdUsuario())
+                .usuarioNome(d.getUsuario().getNome())
+                .instituicaoId(d.getInstituicao().getIdInstituicao())
+                .instituicaoNome(d.getInstituicao().getNome())
+                .impacto(null) // pode mapear depois se quiser
                 .build();
     }
 }
