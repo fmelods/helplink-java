@@ -1,6 +1,6 @@
 package com.fiap.helplink.service;
 
-import com.fiap.helplink.config.JwtTokenProvider;
+import com.fiap.helplink.security.JwtTokenProvider;
 import com.fiap.helplink.dto.AuthRequest;
 import com.fiap.helplink.dto.AuthResponse;
 import com.fiap.helplink.model.Usuario;

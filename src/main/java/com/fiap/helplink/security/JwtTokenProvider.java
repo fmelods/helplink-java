@@ -1,4 +1,4 @@
-package com.fiap.helplink.config;
+package com.fiap.helplink.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -40,15 +40,10 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(bytes);
     }
 
-    // ===========================
-    // Gera token
-    // ===========================
     public String generateToken(Authentication authentication) {
         String username = authentication.getName();
         List<String> roles = authentication.getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+                .stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
 
         Date now = new Date();
         Date exp = new Date(now.getTime() + expiration);
@@ -62,54 +57,27 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    // ===========================
-    // Valida token
-    // ===========================
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
 
-    // ===========================
-    // Authentication a partir do token
-    // ===========================
     public Authentication getAuthentication(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        Claims claims = Jwts.parserBuilder().setSigningKey(key).build()
+                .parseClaimsJws(token).getBody();
 
         String username = claims.getSubject();
         @SuppressWarnings("unchecked")
         List<String> roles = claims.get("roles", List.class);
 
         Collection<SimpleGrantedAuthority> authorities =
-                (roles == null)
-                        ? List.of()
-                        : roles.stream()
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
+                roles == null ? List.of() :
+                        roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
 
         return new UsernamePasswordAuthenticationToken(username, null, authorities);
-    }
-
-    // ===========================
-    // (Opcional) pegar email/username do token
-    // ===========================
-    public String getEmailFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        return claims.getSubject();
     }
 }

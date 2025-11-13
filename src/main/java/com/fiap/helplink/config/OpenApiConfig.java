@@ -1,10 +1,9 @@
 package com.fiap.helplink.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.Contact;
-import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,22 +13,15 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
-                .info(new Info()
-                        .title("HelpLink API")
-                        .version("1.0.0")
-                        .description("API para plataforma de doações")
-                        .contact(new Contact()
-                                .name("HelpLink Team")
-                                .email("helplink@fiap.com.br")
-                                .url("https://github.com/fmelods/helplink")))
-                .addSecurityItem(new SecurityRequirement().addList("TOKEN"))
-                .components(new io.swagger.v3.oas.models.Components()
-                        .addSecuritySchemes("TOKEN",
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
+                .components(new Components()
+                        .addSecuritySchemes("bearerAuth",
                                 new SecurityScheme()
-                                        .type(SecurityScheme.Type.APIKEY)
-                                        .in(SecurityScheme.In.HEADER)
-                                        .name("Authorization") // campo do header
-                                        .description("Cole APENAS o token aqui, sem 'Bearer '")
-                        ));
+                                        .name("Authorization")
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
+                        )
+                );
     }
 }
