@@ -1,21 +1,10 @@
 package com.fiap.helplink.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
 public class AuthRequest {
-    @NotBlank(message = "Email é obrigatório")
-    @Email(message = "Email deve ser válido")
     private String email;
-
-    @NotBlank(message = "Senha é obrigatória")
     private String senha;
 }

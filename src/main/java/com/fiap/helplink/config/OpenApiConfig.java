@@ -17,18 +17,19 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("HelpLink API")
                         .version("1.0.0")
-                        .description("API para plataforma de doações que conecta doadores com ONGs e abrigos")
+                        .description("API para plataforma de doações")
                         .contact(new Contact()
                                 .name("HelpLink Team")
                                 .email("helplink@fiap.com.br")
-                                .url("https://github.com/seu-usuario/helplink")))
-                .addSecurityItem(new SecurityRequirement().addList("Bearer JWT"))
+                                .url("https://github.com/fmelods/helplink")))
+                .addSecurityItem(new SecurityRequirement().addList("TOKEN"))
                 .components(new io.swagger.v3.oas.models.Components()
-                        .addSecuritySchemes("Bearer JWT",
+                        .addSecuritySchemes("TOKEN",
                                 new SecurityScheme()
-                                        .type(SecurityScheme.Type.HTTP)
-                                        .scheme("bearer")
-                                        .bearerFormat("JWT")
-                                        .description("JWT token para autenticação. Obtenha o token no endpoint /api/auth/login")));
+                                        .type(SecurityScheme.Type.APIKEY)
+                                        .in(SecurityScheme.In.HEADER)
+                                        .name("Authorization") // campo do header
+                                        .description("Cole APENAS o token aqui, sem 'Bearer '")
+                        ));
     }
 }

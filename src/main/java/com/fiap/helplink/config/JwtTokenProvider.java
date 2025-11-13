@@ -1,6 +1,9 @@
 package com.fiap.helplink.config;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,14 +15,16 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenProvider {
 
-    @Value("${app.jwt.secret-key}")
-    private String secretKey;
+    @Value("${app.jwt.secret}")
+    private String secret;
 
     @Value("${app.jwt.expiration}")
     private Long expiration;
@@ -28,14 +33,16 @@ public class JwtTokenProvider {
 
     @PostConstruct
     public void init() {
-        byte[] bytes = secretKey.getBytes(StandardCharsets.UTF_8);
+        byte[] bytes = secret.getBytes(StandardCharsets.UTF_8);
         if (bytes.length < 32) {
-            throw new IllegalStateException("app.jwt.secret-key precisa ter ao menos 32 bytes (256 bits)");
+            throw new IllegalStateException("app.jwt.secret precisa ter ao menos 32 bytes (256 bits)");
         }
         this.key = Keys.hmacShaKeyFor(bytes);
     }
 
-    // ✅ Gera token com username e roles
+    // ===========================
+    // Gera token
+    // ===========================
     public String generateToken(Authentication authentication) {
         String username = authentication.getName();
         List<String> roles = authentication.getAuthorities()
@@ -44,18 +51,20 @@ public class JwtTokenProvider {
                 .collect(Collectors.toList());
 
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + expiration);
+        Date exp = new Date(now.getTime() + expiration);
 
         return Jwts.builder()
                 .setSubject(username)
                 .claim("roles", roles)
                 .setIssuedAt(now)
-                .setExpiration(expiryDate)
+                .setExpiration(exp)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // ✅ Valida token
+    // ===========================
+    // Valida token
+    // ===========================
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
@@ -68,17 +77,9 @@ public class JwtTokenProvider {
         }
     }
 
-    // ✅ Extrai o e-mail (subject)
-    public String getEmailFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        return claims.getSubject();
-    }
-
-    // ✅ Converte token para Authentication do Spring Security
+    // ===========================
+    // Authentication a partir do token
+    // ===========================
     public Authentication getAuthentication(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -91,9 +92,24 @@ public class JwtTokenProvider {
         List<String> roles = claims.get("roles", List.class);
 
         Collection<SimpleGrantedAuthority> authorities =
-                roles == null ? List.of() :
-                        roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+                (roles == null)
+                        ? List.of()
+                        : roles.stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList());
 
         return new UsernamePasswordAuthenticationToken(username, null, authorities);
+    }
+
+    // ===========================
+    // (Opcional) pegar email/username do token
+    // ===========================
+    public String getEmailFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.getSubject();
     }
 }

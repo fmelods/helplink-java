@@ -1,15 +1,13 @@
 package com.fiap.helplink.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-@AllArgsConstructor
+@Getter @Setter
 @Builder
 public class AuthResponse {
     private String token;
-    private String refreshToken;
     private String tipo;
     private Long usuarioId;
     private String email;

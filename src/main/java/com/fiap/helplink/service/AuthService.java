@@ -5,12 +5,12 @@ import com.fiap.helplink.dto.AuthRequest;
 import com.fiap.helplink.dto.AuthResponse;
 import com.fiap.helplink.model.Usuario;
 import com.fiap.helplink.repository.UsuarioRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,9 +20,9 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
     private final UsuarioRepository usuarioRepository;
-    private final PasswordEncoder passwordEncoder;
 
     public AuthResponse login(AuthRequest request) {
+
         try {
             String email = request.getEmail().trim().toLowerCase();
 
@@ -49,13 +49,5 @@ public class AuthService {
         } catch (Exception e) {
             throw new RuntimeException("Erro interno no servidor: " + e.getMessage(), e);
         }
-    }
-
-    public boolean validarToken(String token) {
-        return tokenProvider.validateToken(token);
-    }
-
-    public String extrairEmail(String token) {
-        return tokenProvider.getEmailFromToken(token);
     }
 }

@@ -92,7 +92,7 @@ public class DataInitializer implements CommandLineRunner {
         // LOG
         // ===========================
         System.out.println("✓ Dados de inicialização carregados com sucesso!");
-        System.out.println("✓ Usuário de teste: joao@helplink.com / senha123");
+        System.out.println("✓ Usuário de teste: admin@ex.com / fiap25");
         System.out.println("✓ Swagger disponível em: http://localhost:8080/swagger-ui/index.html");
     }
 }
