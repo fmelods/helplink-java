@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/header :: header"></head>
+<body>
+
+<div th:replace="fragments/menu :: menu"></div>
+
+<div class="container mt-4">
+
+    <h2 class="fw-bold mb-4">
+        <i class="bi bi-plus-circle"></i>
+        <span th:text="${inst.idInstituicao == null ? 'Cadastrar Instituição' : 'Editar Instituição'}"></span>
+    </h2>
+
+    <div class="card shadow-sm p-4">
+
+        <form method="post"
+              th:object="${inst}"
+              th:action="@{/instituicoes/salvar}">
+
+            <input type="hidden" th:field="*{idInstituicao}"/>
+
+            <div class="mb-3">
+                <label class="form-label">Nome</label>
+                <input type="text" class="form-control" th:field="*{nome}" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">CNPJ</label>
+                <input type="text" class="form-control" th:field="*{cnpj}" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" th:field="*{email}" required>
+            </div>
+
+            <!-- BOTÕES LADO A LADO -->
+            <div class="d-flex justify-content-between gap-2 mt-4">
+
+                <!-- Botão Voltar -->
+                <a th:href="@{/instituicoes}" class="btn btn-secondary w-50">
+                    <i class="bi bi-arrow-left-circle"></i> Voltar
+                </a>
+
+                <!-- Botão Salvar ou Atualizar -->
+                <button class="btn hl-btn w-50" type="submit">
+                    <span th:text="${inst.idInstituicao == null ? 'Salvar' : 'Atualizar'}"></span>
+                    <i class="bi bi-check-circle"></i>
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>

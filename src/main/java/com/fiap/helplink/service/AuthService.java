@@ -7,45 +7,54 @@ import com.fiap.helplink.model.Usuario;
 import com.fiap.helplink.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.security.authentication.BadCredentialsException;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider tokenProvider;
     private final UsuarioRepository usuarioRepository;
+    private final JwtTokenProvider tokenProvider;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthResponse login(AuthRequest request) {
 
         try {
             String email = request.getEmail().trim().toLowerCase();
 
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(email, request.getSenha())
+            // 1) Buscar usuário pelo email
+            Usuario usuario = usuarioRepository.findByEmail(email)
+                    .orElseThrow(() -> new BadCredentialsException("Credenciais inválidas"));
+
+            // 2) Validar senha com BCrypt
+            boolean senhaValida = passwordEncoder.matches(
+                    request.getSenha(),
+                    usuario.getSenha()
             );
 
-            Usuario usuario = usuarioRepository.findByEmail(email)
-                    .orElseThrow(() -> new BadCredentialsException("Usuário não encontrado"));
+            if (!senhaValida) {
+                throw new BadCredentialsException("Credenciais inválidas");
+            }
 
-            String token = tokenProvider.generateToken(authentication);
+            // 3) Gerar token usando SOMENTE o email
+            String token = tokenProvider.generateTokenFromEmail(usuario.getEmail());
 
-            return AuthResponse.builder()
-                    .token(token)
-                    .tipo("Bearer")
-                    .usuarioId(usuario.getIdUsuario())
-                    .email(usuario.getEmail())
-                    .nome(usuario.getNome())
-                    .mensagem("Autenticação bem-sucedida")
-                    .build();
+            // 4) Montar resposta
+            AuthResponse response = new AuthResponse();
+            response.setToken(token);
+            response.setTipo("Bearer");
+            response.setUsuarioId(usuario.getIdUsuario());
+            response.setEmail(usuario.getEmail());
+            response.setNome(usuario.getNome());
+            response.setMensagem("Autenticação bem-sucedida");
+
+            return response;
 
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException("Credenciais inválidas");
+
         } catch (Exception e) {
             throw new RuntimeException("Erro interno no servidor: " + e.getMessage(), e);
         }

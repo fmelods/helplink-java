@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,12 +14,15 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/categorias")
-@Tag(name = "Categorias", description = "API para gerenciamento de categorias de itens")
+@Tag(name = "Categorias", description = "API para gerenciamento de categorias")
 @SecurityRequirement(name = "bearerAuth")
 public class CategoriaController {
 
-    @Autowired
-    private CategoriaService categoriaService;
+    private final CategoriaService categoriaService;
+
+    public CategoriaController(CategoriaService categoriaService) {
+        this.categoriaService = categoriaService;
+    }
 
     @GetMapping
     @Operation(summary = "Listar todas as categorias")
@@ -37,12 +39,14 @@ public class CategoriaController {
     @PostMapping
     @Operation(summary = "Criar nova categoria")
     public ResponseEntity<CategoriaDTO> criar(@Valid @RequestBody CategoriaDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(categoriaService.criar(dto));
+        CategoriaDTO criada = categoriaService.criar(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(criada);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar categoria")
-    public ResponseEntity<CategoriaDTO> atualizar(@PathVariable Long id, @Valid @RequestBody CategoriaDTO dto) {
+    public ResponseEntity<CategoriaDTO> atualizar(@PathVariable Long id,
+                                                  @Valid @RequestBody CategoriaDTO dto) {
         return ResponseEntity.ok(categoriaService.atualizar(id, dto));
     }
 

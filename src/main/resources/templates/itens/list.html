@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/header :: header"></head>
+
+<body>
+
+<div th:replace="fragments/menu :: menu"></div>
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">
+            <i class="bi bi-box-seam"></i> Itens
+        </h2>
+
+        <a class="btn hl-btn" th:href="@{/itens/novo}">
+            <i class="bi bi-plus-circle"></i> Novo Item
+        </a>
+    </div>
+
+    <table class="table table-striped shadow-sm">
+        <thead class="table-primary">
+        <tr>
+            <th>Nome</th>
+            <th>Categoria</th>
+            <th>Estado</th>
+            <th>Data Cadastro</th>
+            <th class="text-center">Ações</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="item : ${itens}">
+            <td th:text="${item.titulo}"></td>
+            <td th:text="${item.categoriaNome}"></td>
+            <td th:text="${item.estadoConservacao}"></td>
+            <td th:text="${#temporals.format(item.dtRegistro, 'dd/MM/yyyy')}"></td>
+
+            <td class="text-center">
+
+                <!-- Detalhes -->
+                <a class="btn btn-sm btn-outline-primary"
+                   th:href="@{'/itens/' + ${item.idItem}}">
+                    <i class="bi bi-search"></i>
+                </a>
+
+                <!-- Editar -->
+                <a class="btn btn-sm btn-outline-warning ms-1"
+                   th:href="@{'/itens/editar/' + ${item.idItem}}">
+                    <i class="bi bi-pencil"></i>
+                </a>
+
+                <!-- Excluir (CORRIGIDO: agora usa /itens/{id}/excluir) -->
+                <a class="btn btn-sm btn-outline-danger ms-1"
+                   th:href="@{'/itens/' + ${item.idItem} + '/excluir'}"
+                   onclick="return confirm('Tem certeza que deseja excluir este item?')">
+                    <i class="bi bi-trash"></i>
+                </a>
+
+            </td>
+        </tr>
+        </tbody>
+
+    </table>
+
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>

@@ -11,6 +11,5 @@ public interface CategoriaRepository extends JpaRepository<Categoria, Long> {
 
     Optional<Categoria> findByNome(String nome);
 
-    // Novo método auxiliar para verificar duplicatas
     boolean existsByNome(String nome);
 }

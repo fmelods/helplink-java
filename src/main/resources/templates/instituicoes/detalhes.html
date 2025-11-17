@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/header :: header"></head>
+<body>
+
+<div th:replace="fragments/menu :: menu"></div>
+
+<div class="container mt-4">
+
+  <h2 class="fw-bold">
+    <i class="bi bi-building"></i> Detalhes da Instituição
+  </h2>
+
+  <div class="card shadow-sm p-4 mt-3">
+
+    <p><strong>Nome:</strong> <span th:text="${inst.nome}"></span></p>
+    <p><strong>CNPJ:</strong> <span th:text="${inst.cnpj}"></span></p>
+    <p><strong>Email:</strong> <span th:text="${inst.email}"></span></p>
+
+    <div class="mt-4">
+      <a class="btn btn-secondary d-flex align-items-center gap-2 px-4"
+         th:href="@{/instituicoes}">
+        <i class="bi bi-arrow-left"></i> Voltar
+      </a>
+    </div>
+
+  </div>
+
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+</body>
+</html>

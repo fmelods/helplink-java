@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/header :: header"></head>
+
+<body>
+
+<div th:replace="fragments/menu :: menu"></div>
+
+<div class="container mt-4">
+
+  <!-- TÍTULO MUDA CONFORME EDITAR OU NOVO -->
+  <h2 class="fw-bold mb-4 d-flex align-items-center gap-2">
+
+    <i class="bi bi-plus-circle text-primary" th:if="${item.idItem == null}"></i>
+    <i class="bi bi-pencil-square text-dark" th:if="${item.idItem != null}"></i>
+
+    <span th:text="${item.idItem == null ? 'Cadastrar Item' : 'Editar Item'}"></span>
+  </h2>
+
+  <div class="card shadow-sm p-4">
+
+    <form method="post" th:object="${item}" th:action="@{/itens/salvar}">
+
+      <input type="hidden" th:field="*{idItem}">
+
+      <!-- Nome -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Nome do item</label>
+        <input type="text" class="form-control form-control-lg shadow-sm" th:field="*{titulo}" required>
+      </div>
+
+      <!-- Categoria -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Categoria</label>
+
+        <select class="form-select form-select-lg shadow-sm" th:field="*{categoriaId}" required>
+          <option value="">Selecione...</option>
+
+          <!-- SOMENTE CATEGORIAS REAIS -->
+          <option th:each="cat : ${categorias}"
+                  th:value="${cat.idCategoria}"
+                  th:text="${cat.nome}">
+          </option>
+        </select>
+      </div>
+
+      <!-- Estado -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Estado do item</label>
+        <select class="form-select form-select-lg shadow-sm" th:field="*{estadoConservacao}" required>
+          <option value="">Selecione...</option>
+          <option value="Novo">Novo</option>
+          <option value="Semi-novo">Semi-novo</option>
+          <option value="Bom">Bom</option>
+          <option value="Regular">Regular</option>
+        </select>
+      </div>
+
+      <!-- Descrição -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Descrição</label>
+        <textarea class="form-control form-control-lg shadow-sm"
+                  style="height: 110px;"
+                  th:field="*{descricao}">
+        </textarea>
+      </div>
+
+      <div class="d-flex justify-content-between gap-2 mt-4">
+
+        <a class="btn btn-secondary w-50" th:href="@{/itens}">
+          <i class="bi bi-arrow-left-circle"></i> Voltar
+        </a>
+
+        <button type="submit" class="btn btn-primary w-50 d-flex align-items-center justify-content-center gap-2">
+          <span th:text="${item.idItem == null ? 'Salvar' : 'Atualizar'}"></span>
+          <i class="bi bi-check-lg"></i>
+        </button>
+
+      </div>
+
+    </form>
+  </div>
+
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>

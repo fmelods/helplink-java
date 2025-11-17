@@ -6,11 +6,9 @@ import com.fiap.helplink.model.Usuario;
 import com.fiap.helplink.model.Endereco;
 import com.fiap.helplink.repository.UsuarioRepository;
 import com.fiap.helplink.repository.EnderecoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -19,45 +17,59 @@ import java.util.stream.Collectors;
 @Service
 public class UsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final EnderecoRepository enderecoRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private EnderecoRepository enderecoRepository;
+    // CONSTRUTOR MANUAL
+    public UsuarioService(
+            UsuarioRepository usuarioRepository,
+            EnderecoRepository enderecoRepository,
+            PasswordEncoder passwordEncoder
+    ) {
+        this.usuarioRepository = usuarioRepository;
+        this.enderecoRepository = enderecoRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public List<UsuarioDTO> listar() {
+        return usuarioRepository.findAll()
+                .stream().map(this::toDTO).collect(Collectors.toList());
+    }
 
-    public UsuarioDTO encontrarPorId(Long id) {
+    public UsuarioDTO buscar(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
         return toDTO(usuario);
     }
 
-    public UsuarioDTO encontrarPorEmail(String email) {
+    public UsuarioDTO buscarPorEmail(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com email: " + email));
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
         return toDTO(usuario);
     }
 
-    public List<UsuarioDTO> listarTodos() {
-        return usuarioRepository.findAll().stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
+    public Usuario buscarModel(String email) {
+        return usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+    }
+
+    public boolean senhaConfere(String digitada, String criptografada) {
+        return passwordEncoder.matches(digitada, criptografada);
     }
 
     @Transactional
     public UsuarioDTO criar(UsuarioCreateDTO dto) {
+
         if (usuarioRepository.existsByEmail(dto.getEmail())) {
-            throw new IllegalArgumentException("Email já está registrado: " + dto.getEmail());
+            throw new IllegalArgumentException("Email já registrado");
         }
 
-        Usuario usuario = Usuario.builder()
-                .nome(dto.getNome())
-                .email(dto.getEmail())
-                .senha(passwordEncoder.encode(dto.getSenha()))
-                .telefone(dto.getTelefone())
-                .build();
+        Usuario usuario = new Usuario();
+        usuario.setNome(dto.getNome());
+        usuario.setEmail(dto.getEmail());
+        usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
+        usuario.setTelefone(dto.getTelefone());
 
         if (dto.getIdEndereco() != null) {
             Endereco endereco = enderecoRepository.findById(dto.getIdEndereco())
@@ -65,14 +77,15 @@ public class UsuarioService {
             usuario.setEndereco(endereco);
         }
 
-        Usuario usuarioSalvo = usuarioRepository.save(usuario);
-        return toDTO(usuarioSalvo);
+        usuarioRepository.save(usuario);
+        return toDTO(usuario);
     }
 
     @Transactional
     public UsuarioDTO atualizar(Long id, UsuarioCreateDTO dto) {
+
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
         usuario.setNome(dto.getNome());
         usuario.setTelefone(dto.getTelefone());
@@ -83,25 +96,25 @@ public class UsuarioService {
             usuario.setEndereco(endereco);
         }
 
-        Usuario usuarioAtualizado = usuarioRepository.save(usuario);
-        return toDTO(usuarioAtualizado);
+        usuarioRepository.save(usuario);
+        return toDTO(usuario);
     }
 
     @Transactional
-    public void deletar(Long id) {
+    public void excluir(Long id) {
         if (!usuarioRepository.existsById(id)) {
-            throw new EntityNotFoundException("Usuário não encontrado com ID: " + id);
+            throw new EntityNotFoundException("Usuário não encontrado");
         }
         usuarioRepository.deleteById(id);
     }
 
-    private UsuarioDTO toDTO(Usuario usuario) {
-        return UsuarioDTO.builder()
-                .idUsuario(usuario.getIdUsuario())
-                .nome(usuario.getNome())
-                .email(usuario.getEmail())
-                .telefone(usuario.getTelefone())
-                .dtCadastro(usuario.getDtCadastro())
-                .build();
+    private UsuarioDTO toDTO(Usuario u) {
+        UsuarioDTO dto = new UsuarioDTO();
+        dto.setIdUsuario(u.getIdUsuario());
+        dto.setNome(u.getNome());
+        dto.setEmail(u.getEmail());
+        dto.setTelefone(u.getTelefone());
+        dto.setDtCadastro(u.getDtCadastro());
+        return dto;
     }
 }

@@ -1,0 +1,70 @@
+<nav th:fragment="menu"
+     xmlns:th="http://www.thymeleaf.org"
+     class="navbar navbar-expand-lg bg-white shadow-sm"
+     th:if="${session.usuarioLogado != null}">
+
+    <div class="container">
+
+        <!-- LOGO -->
+        <a class="navbar-brand fw-bold text-primary" th:href="@{/dashboard}">
+            <i class="bi bi-heart-fill"></i> HelpLink
+        </a>
+
+        <!-- BOTÃO MOBILE -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- LINKS -->
+        <div id="navbarContent" class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-auto">
+
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/doacoes}">
+                        <i class="bi bi-bag-heart"></i> Doações
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/itens}">
+                        <i class="bi bi-box-seam"></i> Itens
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/instituicoes}">
+                        <i class="bi bi-buildings"></i> Instituições
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/voluntariado}">
+                        <i class="bi bi-people"></i> Voluntariado
+                    </a>
+                </li>
+
+                <!-- LINK PARA O SWAGGER -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/swagger-ui/index.html" target="_blank">
+                        <i class="bi bi-file-code"></i> Swagger
+                    </a>
+                </li>
+
+                <!-- USUÁRIO -->
+                <li class="nav-item me-3 d-flex align-items-center text-primary fw-bold"
+                    th:text="${session.usuarioLogado.nome}">
+                </li>
+
+                <!-- LOGOUT -->
+                <li class="nav-item">
+                    <a class="nav-link text-danger fw-bold" th:href="@{/auth/logout}">
+                        <i class="bi bi-box-arrow-right"></i> Sair
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+
+    </div>
+</nav>

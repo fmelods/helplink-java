@@ -113,6 +113,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Thymeleaf (necessário para carregar páginas HTML) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+
     </dependencies>
 
     <!-- ===================== -->

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-br">
+
+<head th:replace="fragments/header :: header"></head>
+
+<body>
+
+<div th:replace="fragments/menu :: menu"></div>
+
+<div class="container mt-4">
+
+    <h2 class="fw-bold">
+        <i class="bi bi-box"></i> Detalhes do Item
+    </h2>
+
+    <div class="card shadow-sm p-4 mt-3">
+
+        <p><strong>Título:</strong> <span th:text="${item.titulo}"></span></p>
+
+        <p><strong>Categoria:</strong> <span th:text="${item.categoriaNome}"></span></p>
+
+        <p><strong>Estado:</strong> <span th:text="${item.estadoConservacao}"></span></p>
+
+        <p><strong>Descrição:</strong> <span th:text="${item.descricao}"></span></p>
+
+        <p><strong>Data de Cadastro:</strong>
+            <span th:text="${#temporals.format(item.dtRegistro, 'dd/MM/yyyy')}"></span>
+        </p>
+
+        <div class="mt-3">
+            <a class="btn btn-secondary" th:href="@{/itens}">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>

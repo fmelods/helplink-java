@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-br">
+
+<head th:replace="fragments/header :: header"></head>
+
+<body>
+
+<div th:replace="fragments/menu :: menu"></div>
+
+<div class="container mt-4">
+
+    <h2 class="fw-bold mb-4 d-flex align-items-center gap-2">
+        <i class="bi bi-pencil-square text-dark" style="font-size: 1.6rem;"></i>
+        Editar Doação
+    </h2>
+
+    <div class="card shadow-sm p-4" style="max-width: 900px; margin: 0 auto;">
+
+        <div th:if="${erro}" class="alert alert-danger text-center fw-bold mb-4">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span th:text="${erro}"></span>
+        </div>
+
+        <form method="post"
+              th:object="${form}"
+              th:action="@{'/doacoes/' + ${form.idDoacao} + '/atualizar'}">
+
+            <!-- Instituição -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Instituição</label>
+                <select class="form-select form-select-lg"
+                        th:field="*{instituicaoId}"
+                        required>
+
+                    <option value="">Selecione...</option>
+
+                    <option th:each="inst : ${instituicoes}"
+                            th:value="${inst.idInstituicao}"
+                            th:text="${inst.nome}">
+                    </option>
+                </select>
+            </div>
+
+            <!-- Item -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Item para Doação</label>
+
+                <textarea class="form-control form-control-lg"
+                          style="height: 110px;"
+                          th:field="*{itemDescricao}"
+                          maxlength="200"
+                          required></textarea>
+
+                <div class="form-text">
+                    Ajuste a descrição do item.
+                </div>
+            </div>
+
+            <!-- Botões lado a lado -->
+            <div class="d-flex gap-2 mt-4">
+
+                <!-- Botão Voltar -->
+                <a class="btn btn-secondary w-50 d-flex align-items-center justify-content-center gap-1"
+                   th:href="@{/doacoes}">
+                    <i class="bi bi-arrow-left"></i>
+                    Voltar
+                </a>
+
+                <!-- Botão Atualizar -->
+                <button type="submit"
+                        class="btn hl-btn w-50 d-flex align-items-center justify-content-center gap-2">
+                    Atualizar
+                    <i class="bi bi-check-lg"></i>
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>

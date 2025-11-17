@@ -1,12 +1,11 @@
 package com.fiap.helplink.service;
 
 import com.fiap.helplink.dto.InstituicaoDTO;
-import com.fiap.helplink.model.Endereco;
 import com.fiap.helplink.model.Instituicao;
-import com.fiap.helplink.repository.EnderecoRepository;
 import com.fiap.helplink.repository.InstituicaoRepository;
+
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,75 +15,120 @@ import java.util.stream.Collectors;
 @Service
 public class InstituicaoService {
 
-    @Autowired private InstituicaoRepository instituicaoRepository;
-    @Autowired private EnderecoRepository enderecoRepository;
+    private final InstituicaoRepository instituicaoRepository;
 
+    public InstituicaoService(InstituicaoRepository instituicaoRepository) {
+        this.instituicaoRepository = instituicaoRepository;
+    }
+
+    /* ============================================================
+       LISTAR TODAS
+     ============================================================ */
     @Transactional(readOnly = true)
-    public List<InstituicaoDTO> listarTodas() {
-        return instituicaoRepository.findAll().stream()
+    public List<InstituicaoDTO> listar() {
+        return instituicaoRepository.findAll()
+                .stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
+    /* ============================================================
+       BUSCAR POR ID
+     ============================================================ */
     @Transactional(readOnly = true)
-    public InstituicaoDTO encontrarPorId(Long id) {
-        Instituicao instituicao = instituicaoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Instituição não encontrada com ID: " + id));
-        return toDTO(instituicao);
+    public InstituicaoDTO buscar(Long id) {
+        Instituicao inst = instituicaoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Instituição não encontrada"));
+        return toDTO(inst);
     }
 
+    /* ============================================================
+       CRIAR NOVA INSTITUIÇÃO
+     ============================================================ */
     @Transactional
     public InstituicaoDTO criar(InstituicaoDTO dto) {
+
+        // Validação de CNPJ duplicado
         if (instituicaoRepository.existsByCnpj(dto.getCnpj())) {
-            throw new IllegalArgumentException("CNPJ já registrado: " + dto.getCnpj());
+            throw new DataIntegrityViolationException("Já existe uma instituição com este CNPJ.");
         }
 
-        Instituicao instituicao = Instituicao.builder()
-                .nome(dto.getNome())
-                .cnpj(dto.getCnpj())
-                .email(dto.getEmail())
-                .categoriasAceitas(dto.getCategoriasAceitas())
-                .telefone(dto.getTelefone())
-                .build();
+        Instituicao inst = new Instituicao();
+        copyDtoToEntity(dto, inst);
 
-        if (dto.getEndereco() != null && dto.getEndereco().getIdEndereco() != null) {
-            Endereco endereco = enderecoRepository.findById(dto.getEndereco().getIdEndereco())
-                    .orElseThrow(() -> new EntityNotFoundException("Endereço não encontrado"));
-            instituicao.setEndereco(endereco);
-        }
-
-        return toDTO(instituicaoRepository.save(instituicao));
+        return toDTO(instituicaoRepository.save(inst));
     }
 
+    /* ============================================================
+       ATUALIZAR INSTITUIÇÃO
+     ============================================================ */
     @Transactional
     public InstituicaoDTO atualizar(Long id, InstituicaoDTO dto) {
-        Instituicao instituicao = instituicaoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Instituição não encontrada com ID: " + id));
 
-        instituicao.setNome(dto.getNome());
-        instituicao.setEmail(dto.getEmail());
-        instituicao.setTelefone(dto.getTelefone());
-        instituicao.setCategoriasAceitas(dto.getCategoriasAceitas());
+        Instituicao inst = instituicaoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Instituição não encontrada"));
 
-        return toDTO(instituicaoRepository.save(instituicao));
+        // Validação de CNPJ duplicado em atualização
+        boolean cnpjUsadoPorOutro =
+                instituicaoRepository.existsByCnpjAndIdInstituicaoNot(dto.getCnpj(), id);
+
+        if (cnpjUsadoPorOutro) {
+            throw new DataIntegrityViolationException("CNPJ já está sendo usado por outra instituição.");
+        }
+
+        copyDtoToEntity(dto, inst);
+
+        return toDTO(instituicaoRepository.save(inst));
     }
 
+    /* ============================================================
+       EXCLUIR INSTITUIÇÃO
+     ============================================================ */
     @Transactional
     public void deletar(Long id) {
-        if (!instituicaoRepository.existsById(id)) {
-            throw new EntityNotFoundException("Instituição não encontrada com ID: " + id);
+
+        Instituicao inst = instituicaoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Instituição não encontrada"));
+
+        try {
+            instituicaoRepository.delete(inst);
+        } catch (DataIntegrityViolationException e) {
+            // Aqui pega FK das doações
+            throw new DataIntegrityViolationException(
+                    "Não é possível excluir esta instituição pois existem doações vinculadas.");
         }
-        instituicaoRepository.deleteById(id);
     }
 
-    private InstituicaoDTO toDTO(Instituicao instituicao) {
-        return InstituicaoDTO.builder()
-                .idInstituicao(instituicao.getIdInstituicao())
-                .nome(instituicao.getNome())
-                .cnpj(instituicao.getCnpj())
-                .email(instituicao.getEmail())
-                .categoriasAceitas(instituicao.getCategoriasAceitas())
-                .telefone(instituicao.getTelefone())
-                .build();
+    /* ============================================================
+       CONTAGEM
+     ============================================================ */
+    @Transactional(readOnly = true)
+    public long countAll() {
+        return instituicaoRepository.count();
+    }
+
+    /* ============================================================
+       MÉTODO DE CONVERSÃO DTO -> ENTIDADE
+     ============================================================ */
+    private void copyDtoToEntity(InstituicaoDTO dto, Instituicao inst) {
+        inst.setNome(dto.getNome() != null ? dto.getNome().trim() : null);
+        inst.setCnpj(dto.getCnpj() != null ? dto.getCnpj().trim() : null);
+        inst.setEmail(dto.getEmail() != null ? dto.getEmail().trim() : null);
+        inst.setTelefone(dto.getTelefone());
+        inst.setCategoriasAceitas(dto.getCategoriasAceitas());
+    }
+
+    /* ============================================================
+       MÉTODO DE CONVERSÃO ENTIDADE -> DTO
+     ============================================================ */
+    private InstituicaoDTO toDTO(Instituicao i) {
+        InstituicaoDTO dto = new InstituicaoDTO();
+        dto.setIdInstituicao(i.getIdInstituicao());
+        dto.setNome(i.getNome());
+        dto.setCnpj(i.getCnpj());
+        dto.setEmail(i.getEmail());
+        dto.setTelefone(i.getTelefone());
+        dto.setCategoriasAceitas(i.getCategoriasAceitas());
+        return dto;
     }
 }

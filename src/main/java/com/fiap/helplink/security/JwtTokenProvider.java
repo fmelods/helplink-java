@@ -5,20 +5,14 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.util.Collection;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenProvider {
@@ -29,55 +23,53 @@ public class JwtTokenProvider {
     @Value("${app.jwt.expiration}")
     private Long expiration;
 
-    private Key key;
+    private Key signingKey;
 
     @PostConstruct
     public void init() {
-        byte[] bytes = secret.getBytes(StandardCharsets.UTF_8);
-        if (bytes.length < 32) {
-            throw new IllegalStateException("app.jwt.secret precisa ter ao menos 32 bytes (256 bits)");
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+
+        if (keyBytes.length < 32) {
+            throw new IllegalStateException("A chave JWT (app.jwt.secret) precisa ter pelo menos 32 bytes.");
         }
-        this.key = Keys.hmacShaKeyFor(bytes);
+
+        this.signingKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(Authentication authentication) {
-        String username = authentication.getName();
-        List<String> roles = authentication.getAuthorities()
-                .stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+    // 🔥 Gera token usando só o e-mail
+    public String generateTokenFromEmail(String email) {
 
-        Date now = new Date();
-        Date exp = new Date(now.getTime() + expiration);
+        Date agora = new Date();
+        Date expira = new Date(agora.getTime() + expiration);
 
         return Jwts.builder()
-                .setSubject(username)
-                .claim("roles", roles)
-                .setIssuedAt(now)
-                .setExpiration(exp)
-                .signWith(key, SignatureAlgorithm.HS256)
+                .setSubject(email)
+                .setIssuedAt(agora)
+                .setExpiration(expira)
+                .signWith(signingKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            Jwts.parserBuilder()
+                    .setSigningKey(signingKey)
+                    .build()
+                    .parseClaimsJws(token);
             return true;
+
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
 
-    public Authentication getAuthentication(String token) {
-        Claims claims = Jwts.parserBuilder().setSigningKey(key).build()
-                .parseClaimsJws(token).getBody();
+    public String getEmailFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(signingKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
 
-        String username = claims.getSubject();
-        @SuppressWarnings("unchecked")
-        List<String> roles = claims.get("roles", List.class);
-
-        Collection<SimpleGrantedAuthority> authorities =
-                roles == null ? List.of() :
-                        roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
-
-        return new UsernamePasswordAuthenticationToken(username, null, authorities);
+        return claims.getSubject();
     }
 }

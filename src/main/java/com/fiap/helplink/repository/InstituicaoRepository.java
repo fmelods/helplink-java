@@ -8,6 +8,10 @@ import java.util.Optional;
 
 @Repository
 public interface InstituicaoRepository extends JpaRepository<Instituicao, Long> {
+
     Optional<Instituicao> findByCnpj(String cnpj);
+
     boolean existsByCnpj(String cnpj);
+
+    boolean existsByCnpjAndIdInstituicaoNot(String cnpj, Long idInstituicao);
 }

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/header :: header"></head>
+
+<body>
+
+<div th:replace="fragments/menu :: menu"></div>
+
+<div class="container mt-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">
+      <i class="bi bi-building"></i> Instituições
+    </h2>
+
+    <a class="btn hl-btn" th:href="@{/instituicoes/nova}">
+      <i class="bi bi-plus-circle"></i> Nova Instituição
+    </a>
+  </div>
+
+  <!-- ALERTAS -->
+  <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
+  <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
+
+  <div class="row">
+    <div class="col-md-4 mb-4" th:each="inst : ${instituicoes}">
+      <div class="card shadow-sm p-3">
+
+        <h5 th:text="${inst.nome}"></h5>
+
+        <p><strong>CNPJ:</strong> <span th:text="${inst.cnpj}"></span></p>
+        <p><strong>Email:</strong> <span th:text="${inst.email}"></span></p>
+
+        <div class="d-flex gap-2 mt-3">
+
+          <!-- Detalhes -->
+          <a class="btn btn-primary w-100"
+             th:href="@{'/instituicoes/' + ${inst.idInstituicao}}">
+            Detalhes
+          </a>
+
+          <!-- Editar -->
+          <a class="btn btn-warning w-100"
+             th:href="@{'/instituicoes/editar/' + ${inst.idInstituicao}}">
+            Editar
+          </a>
+
+          <!-- Excluir -->
+          <a class="btn btn-danger w-100"
+             th:href="@{'/instituicoes/' + ${inst.idInstituicao} + '/excluir'}"
+             onclick="return confirm('Deseja excluir esta instituição?')">
+            Excluir
+          </a>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>

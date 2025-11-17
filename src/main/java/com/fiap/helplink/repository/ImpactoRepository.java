@@ -8,5 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface ImpactoRepository extends JpaRepository<Impacto, Long> {
-    Optional<Impacto> findByDoacaoIdDoacao(Long doacaoId);
+
+    Optional<Impacto> findByDoacao_IdDoacao(Long doacaoId);
 }

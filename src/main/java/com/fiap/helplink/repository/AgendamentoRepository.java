@@ -8,5 +8,7 @@ import java.util.List;
 
 @Repository
 public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> {
-    List<Agendamento> findByDoacaoIdDoacao(Long doacaoId);
+
+    // Lista todos os agendamentos de uma doação específica
+    List<Agendamento> findByDoacao_IdDoacao(Long doacaoId);
 }

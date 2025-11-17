@@ -29,9 +29,9 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        // ===========================
+        // ============================
         // CATEGORIAS
-        // ===========================
+        // ============================
         String[] nomesCategorias = {
                 "Roupas", "Alimentos", "Livros", "Brinquedos",
                 "Eletrônicos", "Móveis", "Higiene", "Medicamentos",
@@ -40,59 +40,76 @@ public class DataInitializer implements CommandLineRunner {
 
         for (String nome : nomesCategorias) {
             if (!categoriaRepository.existsByNome(nome)) {
-                categoriaRepository.save(Categoria.builder().nome(nome).build());
+                Categoria c = new Categoria();
+                c.setNome(nome);
+                categoriaRepository.save(c);
             }
         }
 
-        // ===========================
+        // ============================
         // USUÁRIOS DE TESTE
-        // ===========================
+        // ============================
         if (usuarioRepository.findAll().isEmpty()) {
-            Usuario user1 = Usuario.builder()
-                    .nome("João Silva")
-                    .email("joao@helplink.com")
-                    .senha(passwordEncoder.encode("senha123"))
-                    .telefone("(11) 98765-4321")
-                    .build();
 
-            Usuario user2 = Usuario.builder()
-                    .nome("Maria Santos")
-                    .email("maria@helplink.com")
-                    .senha(passwordEncoder.encode("senha123"))
-                    .telefone("(11) 99876-5432")
-                    .build();
+            Usuario u1 = new Usuario();
+            u1.setNome("João Silva");
+            u1.setEmail("joao@helplink.com");
+            u1.setSenha(passwordEncoder.encode("senha123"));
+            u1.setTelefone("(11) 98765-4321");
 
-            usuarioRepository.saveAll(Arrays.asList(user1, user2));
+            Usuario u2 = new Usuario();
+            u2.setNome("Maria Santos");
+            u2.setEmail("maria@helplink.com");
+            u2.setSenha(passwordEncoder.encode("senha123"));
+            u2.setTelefone("(11) 99876-5432");
+
+            usuarioRepository.saveAll(Arrays.asList(u1, u2));
         }
 
-        // ===========================
-        // INSTITUIÇÕES
-        // ===========================
-        if (instituicaoRepository.findAll().isEmpty()) {
-            Instituicao inst1 = Instituicao.builder()
-                    .nome("ONG Solidária São Paulo")
-                    .cnpj("12.345.678/0001-99")
-                    .email("contato@ongsolidaria.org.br")
-                    .categoriasAceitas("Roupas, Alimentos, Livros, Brinquedos")
-                    .telefone("(11) 3456-7890")
-                    .build();
+        // ============================
+        // USUÁRIO ADMIN DO LOGIN API
+        // ============================
+        if (!usuarioRepository.existsByEmail("admin@ex.com")) {
 
-            Instituicao inst2 = Instituicao.builder()
-                    .nome("Abrigo Nossa Senhora da Esperança")
-                    .cnpj("98.765.432/0001-11")
-                    .email("abrigo@esperanca.org.br")
-                    .categoriasAceitas("Alimentos, Roupas, Higiene, Utensílios")
-                    .telefone("(11) 2345-6789")
-                    .build();
+            Usuario admin = new Usuario();
+            admin.setNome("Administrador");
+            admin.setEmail("admin@ex.com");
+            admin.setSenha(passwordEncoder.encode("fiap25")); // SENHA CERTA AQUI
+            admin.setTelefone("(11) 99999-9999");
+
+            usuarioRepository.save(admin);
+
+            System.out.println("✓ Usuário admin criado.");
+        } else {
+            System.out.println("✓ Usuário admin já existe.");
+        }
+
+        // ============================
+        // INSTITUIÇÕES
+        // ============================
+        if (instituicaoRepository.findAll().isEmpty()) {
+
+            Instituicao inst1 = new Instituicao();
+            inst1.setNome("ONG Solidária São Paulo");
+            inst1.setCnpj("12.345.678/0001-99");
+            inst1.setEmail("contato@ongsolidaria.org.br");
+            inst1.setCategoriasAceitas("Roupas, Alimentos, Livros, Brinquedos");
+            inst1.setTelefone("(11) 3456-7890");
+
+            Instituicao inst2 = new Instituicao();
+            inst2.setNome("Abrigo Nossa Senhora da Esperança");
+            inst2.setCnpj("98.765.432/0001-11");
+            inst2.setEmail("abrigo@esperanca.org.br");
+            inst2.setCategoriasAceitas("Alimentos, Roupas, Higiene, Utensílios");
+            inst2.setTelefone("(11) 2345-6789");
 
             instituicaoRepository.saveAll(Arrays.asList(inst1, inst2));
         }
 
-        // ===========================
-        // LOG
-        // ===========================
-        System.out.println("✓ Dados de inicialização carregados com sucesso!");
-        System.out.println("✓ Usuário de teste: admin@ex.com / fiap25");
-        System.out.println("✓ Swagger disponível em: http://localhost:8080/swagger-ui/index.html");
+        System.out.println("==============================================");
+        System.out.println("✓ Dados carregados com sucesso!");
+        System.out.println("✓ Login API → admin@ex.com / fiap25");
+        System.out.println("✓ Site disponível em → http://localhost:8080");
+        System.out.println("==============================================");
     }
 }

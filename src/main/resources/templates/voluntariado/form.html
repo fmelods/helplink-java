@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/header :: header"></head>
+
+<body>
+
+<div th:replace="fragments/menu :: menu"></div>
+
+<div class="container mt-4">
+
+  <h2 class="fw-bold mb-4">
+    <i class="bi bi-person-check"></i>
+    <span th:text="${voluntariado.idVoluntariado == null ? 'Registrar Voluntariado' : 'Editar Voluntariado'}"></span>
+  </h2>
+
+  <div class="card shadow-sm p-4">
+
+    <form method="post"
+          th:object="${voluntariado}"
+          th:action="@{/voluntariado/salvar}">
+
+      <input type="hidden" th:field="*{idVoluntariado}"/>
+
+      <div class="mb-3">
+        <label class="form-label">Data da participação</label>
+        <input type="date" class="form-control"
+               th:field="*{dtParticipacao}" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Horas dedicadas</label>
+        <input type="number" class="form-control"
+               th:field="*{horasDedicadas}" min="1" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Habilidades empregadas</label>
+        <input type="text" class="form-control"
+               th:field="*{habilidades}"
+               placeholder="Ex: Organização, Liderança">
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Instituição</label>
+        <select class="form-select" th:field="*{instituicaoId}" required>
+          <option value="">Selecione</option>
+          <option th:each="inst : ${instituicoes}"
+                  th:value="${inst.idInstituicao}"
+                  th:text="${inst.nome}"></option>
+        </select>
+      </div>
+
+      <!-- BOTÕES LADO A LADO -->
+      <div class="d-flex justify-content-between gap-2 mt-4">
+
+        <!-- Botão Voltar -->
+        <a th:href="@{/voluntariado}" class="btn btn-secondary w-50">
+          <i class="bi bi-arrow-left-circle"></i> Voltar
+        </a>
+
+        <!-- Botão Salvar/Atualizar -->
+        <button type="submit" class="btn hl-btn w-50">
+          <span th:text="${voluntariado.idVoluntariado == null ? 'Salvar' : 'Atualizar'}"></span>
+          <i class="bi bi-check-circle"></i>
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>

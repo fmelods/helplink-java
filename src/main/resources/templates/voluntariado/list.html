@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/header :: header"></head>
+
+<body>
+
+<div th:replace="fragments/menu :: menu"></div>
+
+<div class="container mt-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">
+      <i class="bi bi-people"></i> Voluntariado
+    </h2>
+
+    <a class="btn hl-btn" th:href="@{/voluntariado/novo}">
+      <i class="bi bi-plus-circle"></i> Novo
+    </a>
+  </div>
+
+  <table class="table table-striped shadow-sm">
+    <thead class="table-primary">
+    <tr>
+      <th>Data</th>
+      <th>Horas dedicadas</th>
+      <th>Habilidades</th>
+      <th>Instituição</th>
+      <th class="text-center">Ações</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="v : ${voluntariados}">
+      <td th:text="${#temporals.format(v.dtParticipacao, 'dd/MM/yyyy')}">10/03/2025</td>
+      <td th:text="${v.horasDedicadas + 'h'}">5h</td>
+      <td th:text="${v.habilidades}">Organização</td>
+      <td th:text="${v.instituicaoNome}">ONG 3</td>
+
+      <td class="text-center">
+        <!-- Detalhes -->
+        <a class="btn btn-sm btn-outline-primary"
+           th:href="@{'/voluntariado/' + ${v.idVoluntariado}}">
+          <i class="bi bi-search"></i>
+        </a>
+
+        <!-- Editar -->
+        <a class="btn btn-sm btn-outline-warning ms-1"
+           th:href="@{'/voluntariado/' + ${v.idVoluntariado} + '/editar'}">
+          <i class="bi bi-pencil"></i>
+        </a>
+
+        <!-- Excluir -->
+        <a class="btn btn-sm btn-outline-danger ms-1"
+           th:href="@{'/voluntariado/' + ${v.idVoluntariado} + '/excluir'}"
+           onclick="return confirm('Deseja remover este registro?')">
+          <i class="bi bi-trash"></i>
+        </a>
+      </td>
+    </tr>
+    </tbody>
+
+  </table>
+
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>

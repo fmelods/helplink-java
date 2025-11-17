@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/header :: header"></head>
+
+<body class="d-flex align-items-center justify-content-center bg-light" style="height:100vh;">
+
+<style>
+    .is-valid { border-color: #28a745 !important; }
+    .is-invalid { border-color: #dc3545 !important; }
+
+    .toggle-password {
+        cursor: pointer;
+        font-size: 17px;
+        color: #444;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 6px;
+        user-select: none;
+    }
+</style>
+
+<div class="container" style="max-width:450px;">
+    <div class="card shadow p-4 border-0">
+
+        <h3 class="text-center mb-4 fw-bold text-primary">Criar Conta</h3>
+
+        <div th:if="${erro}" class="alert alert-danger text-center fw-semibold">
+            <i class="bi bi-exclamation-circle"></i> <span th:text="${erro}"></span>
+        </div>
+
+        <form method="post" th:action="@{/auth/register}" th:object="${usuario}" id="formRegister">
+
+            <!-- Nome -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Nome completo</label>
+                <input type="text" class="form-control" th:field="*{nome}" required minlength="3">
+                <div class="invalid-feedback">Digite seu nome completo.</div>
+            </div>
+
+            <!-- Email -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Email</label>
+                <input type="email" class="form-control" th:field="*{email}" required>
+                <div class="invalid-feedback">Informe um email válido.</div>
+            </div>
+
+            <!-- Telefone -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Telefone</label>
+                <input type="text" id="telefone" class="form-control" th:field="*{telefone}" placeholder="(11) 99999-0000">
+            </div>
+
+            <!-- SENHA -->
+            <div class="mb-1">
+                <label class="form-label fw-semibold">Senha</label>
+
+                <input type="password"
+                       class="form-control"
+                       id="senha"
+                       th:field="*{senha}"
+                       required
+                       minlength="6"
+                       pattern="^(?=.*[A-Za-z])(?=.*[0-9]).{6,}$"
+                       placeholder="Mínimo 6 caracteres, contendo letra e número">
+
+
+                <div class="invalid-feedback">
+                    A senha deve ter pelo menos 6 caracteres, contendo 1 letra e 1 número.
+                </div>
+            </div>
+
+            <!-- Mostrar senha -->
+            <div class="toggle-password" onclick="toggleSenha()">
+                <i id="iconeOlho" class="bi bi-eye-slash"></i> Mostrar senha
+            </div>
+
+            <!-- BOTÃO SEM DESABILITAR -->
+            <button type="submit" id="btnRegister" class="btn hl-btn w-100 py-2 mt-3">
+                Registrar
+            </button>
+
+            <p class="mt-3 text-center">
+                Já tem conta? <a th:href="@{/auth/login}">Entrar</a>
+            </p>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    const inputs = document.querySelectorAll("input");
+    const tel = document.getElementById("telefone");
+    const senhaInput = document.getElementById("senha");
+    const icone = document.getElementById("iconeOlho");
+
+    // Marca campo válido ou inválido, mas sem esconder o botão
+    inputs.forEach(campo => {
+        campo.addEventListener('input', () => {
+            campo.classList.toggle('is-invalid', !campo.checkValidity());
+            campo.classList.toggle('is-valid', campo.checkValidity());
+        });
+    });
+
+    // Máscara telefone
+    tel.addEventListener("input", () => {
+        tel.value = tel.value
+            .replace(/\D/g, "")
+            .replace(/(\d{2})(\d)/, "($1) $2")
+            .replace(/(\d{5})(\d)/, "$1-$2")
+            .replace(/(-\d{4})\d+$/, "$1");
+    });
+
+    // Mostrar/ocultar senha
+    function toggleSenha() {
+        const tipo = senhaInput.type === "password" ? "text" : "password";
+        senhaInput.type = tipo;
+
+        if (tipo === "text") {
+            icone.classList.remove("bi-eye-slash");
+            icone.classList.add("bi-eye");
+        } else {
+            icone.classList.remove("bi-eye");
+            icone.classList.add("bi-eye-slash");
+        }
+    }
+</script>
+
+</body>
+</html>

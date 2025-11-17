@@ -10,6 +10,13 @@ import java.util.List;
 
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long> {
-    List<Item> findByUsuarioIdUsuario(Long usuarioId);
-    Page<Item> findByCategoriaIdCategoria(Long categoriaId, Pageable pageable);
+
+    // LISTAR ITENS DO USUÁRIO
+    List<Item> findByUsuario_IdUsuario(Long usuarioId);
+
+    // PAGINAÇÃO POR CATEGORIA (API)
+    Page<Item> findByCategoria_IdCategoria(Long categoriaId, Pageable pageable);
+
+    // CONTAGEM PARA DASHBOARD
+    long countByUsuario_IdUsuario(Long usuarioId);
 }

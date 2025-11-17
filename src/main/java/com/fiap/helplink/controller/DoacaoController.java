@@ -3,11 +3,14 @@ package com.fiap.helplink.controller;
 import com.fiap.helplink.dto.DoacaoCreateDTO;
 import com.fiap.helplink.dto.DoacaoDTO;
 import com.fiap.helplink.service.DoacaoService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,52 +19,83 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/doacoes")
-@Tag(name = "Doações", description = "Endpoints de gerenciamento de doações")
+@Tag(name = "Doações", description = "API para gerenciamento das doações")
 @SecurityRequirement(name = "bearerAuth")
 public class DoacaoController {
 
-    @Autowired
-    private DoacaoService doacaoService;
+    private final DoacaoService doacaoService;
 
+    public DoacaoController(DoacaoService doacaoService) {
+        this.doacaoService = doacaoService;
+    }
+
+    // LISTAR TODAS
     @GetMapping
-    @Operation(summary = "Listar todas as doações", description = "Retorna uma lista com todas as doações registradas")
+    @Operation(summary = "Listar todas as doações")
     public ResponseEntity<List<DoacaoDTO>> listarTodas() {
-        List<DoacaoDTO> doacoes = doacaoService.listarTodas();
-        return ResponseEntity.ok(doacoes);
+        return ResponseEntity.ok(doacaoService.listarTodas());
     }
 
+    // BUSCAR POR ID
     @GetMapping("/{id}")
-    @Operation(summary = "Buscar doação por ID", description = "Retorna os detalhes de uma doação específica")
-    public ResponseEntity<DoacaoDTO> encontrarPorId(@PathVariable Long id) {
-        DoacaoDTO doacao = doacaoService.encontrarPorId(id);
-        return ResponseEntity.ok(doacao);
+    @Operation(summary = "Buscar doação por ID")
+    public ResponseEntity<?> buscarPorId(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(doacaoService.buscar(id));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Doação não encontrada");
+        }
     }
 
+    // CRIAR NOVA
     @PostMapping
-    @Operation(summary = "Criar nova doação", description = "Cria uma nova doação associando itens a uma instituição")
-    public ResponseEntity<DoacaoDTO> criar(
+    @Operation(summary = "Criar nova doação")
+    public ResponseEntity<?> criar(
             @RequestParam Long usuarioId,
             @Valid @RequestBody DoacaoCreateDTO dto) {
-        DoacaoDTO doacao = doacaoService.criar(usuarioId, dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(doacao);
+
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(doacaoService.criar(usuarioId, dto));
+
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Usuário ou instituição não encontrados");
+        }
     }
 
+    // ALTERAR STATUS
     @PutMapping("/{id}/status")
-    @Operation(
-            summary = "Atualizar status da doação",
-            description = "Atualiza o status da doação (valores válidos: ABERTA, CONCLUIDA, CANCELADA)"
-    )
-    public ResponseEntity<DoacaoDTO> atualizarStatus(
+    @Operation(summary = "Atualizar status da doação")
+    public ResponseEntity<?> atualizarStatus(
             @PathVariable Long id,
             @RequestParam String status) {
-        DoacaoDTO atualizada = doacaoService.atualizar(id, status);
-        return ResponseEntity.ok(atualizada);
+
+        try {
+            return ResponseEntity.ok(doacaoService.atualizar(id, status));
+
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Doação não encontrada");
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Status inválido. Use: ABERTA, CONCLUIDA ou CANCELADA");
+        }
     }
 
+    // EXCLUIR
     @DeleteMapping("/{id}")
-    @Operation(summary = "Deletar doação", description = "Remove uma doação do sistema")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        doacaoService.deletar(id);
-        return ResponseEntity.noContent().build();
+    @Operation(summary = "Excluir doação")
+    public ResponseEntity<?> deletar(@PathVariable Long id) {
+        try {
+            doacaoService.excluir(id);
+            return ResponseEntity.noContent().build();
+
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Doação não encontrada");
+        }
     }
 }

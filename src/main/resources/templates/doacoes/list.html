@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-br">
+
+<head th:replace="fragments/header :: header"></head>
+<body>
+
+<div th:replace="fragments/menu :: menu"></div>
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">
+            <i class="bi bi-heart"></i> Doações
+        </h2>
+
+        <a th:href="@{/doacoes/nova}" class="btn hl-btn">
+            <i class="bi bi-plus-circle"></i> Nova Doação
+        </a>
+    </div>
+
+    <table class="table table-striped shadow-sm">
+        <thead class="table-primary">
+        <tr>
+            <th>ID</th>
+            <th>Instituição</th>
+            <th>Status</th>
+            <th>Solicitação</th>
+            <th>Ações</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        <tr th:each="d : ${doacoes}">
+            <td th:text="${d.idDoacao}"></td>
+            <td th:text="${d.instituicaoNome}"></td>
+
+            <td>
+                <span class="badge"
+                      th:classappend="${d.status == 'ABERTA'    ? 'bg-warning text-dark' :
+                                      (d.status == 'AGENDADA'  ? 'bg-info text-dark'    :
+                                      (d.status == 'CONCLUIDA' ? 'bg-success'           :
+                                      (d.status == 'CANCELADA' ? 'bg-danger'            :
+                                                                 'bg-secondary')))}"
+                      th:text="${d.status}">
+                </span>
+            </td>
+
+            <td th:text="${#temporals.format(d.dtSolicitacao, 'dd/MM/yyyy')}"></td>
+
+            <td class="d-flex gap-2">
+
+                <a class="btn btn-sm btn-outline-primary"
+                   th:href="@{'/doacoes/' + ${d.idDoacao}}">
+                    <i class="bi bi-search"></i>
+                </a>
+
+                <a class="btn btn-sm btn-outline-warning"
+                   th:href="@{'/doacoes/' + ${d.idDoacao} + '/editar'}">
+                    <i class="bi bi-pencil-fill"></i>
+                </a>
+
+                <a class="btn btn-sm btn-outline-danger"
+                   th:href="@{'/doacoes/' + ${d.idDoacao} + '/excluir'}"
+                   onclick="return confirm('Deseja excluir esta doação?');">
+                    <i class="bi bi-trash"></i>
+                </a>
+
+            </td>
+
+        </tr>
+
+        </tbody>
+    </table>
+
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>

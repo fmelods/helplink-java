@@ -16,4 +16,8 @@ public interface DoacaoRepository extends JpaRepository<Doacao, Long> {
 
     @EntityGraph(attributePaths = { "usuario", "instituicao" })
     List<Doacao> findByStatus(String status);
+
+    List<Doacao> findByUsuario_IdUsuario(Long usuarioId);
+
+    long countByUsuario_IdUsuario(Long usuarioId);
 }

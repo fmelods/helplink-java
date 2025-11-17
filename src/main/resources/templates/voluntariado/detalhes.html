@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/header :: header"></head>
+<body>
+
+<div th:replace="fragments/menu :: menu"></div>
+
+<div class="container mt-4">
+
+    <h2 class="fw-bold">
+        <i class="bi bi-people"></i> Detalhes do Voluntariado
+    </h2>
+
+    <div class="card shadow-sm p-4 mt-3">
+
+        <p><strong>Data:</strong>
+            <span th:text="${#temporals.format(voluntariado.dtParticipacao, 'dd/MM/yyyy')}"></span>
+        </p>
+
+        <p><strong>Horas dedicadas:</strong>
+            <span th:text="${voluntariado.horasDedicadas + 'h'}"></span>
+        </p>
+
+        <p><strong>Habilidades:</strong>
+            <span th:text="${voluntariado.habilidades}"></span>
+        </p>
+
+        <p><strong>Instituição:</strong>
+            <span th:text="${voluntariado.instituicaoNome}"></span>
+        </p>
+
+        <div class="mt-3">
+            <a class="btn btn-secondary d-flex align-items-center gap-2 px-4"
+               th:href="@{/voluntariado}">
+                <i class="bi bi-arrow-left"></i> Voltar
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+</body>
+</html>

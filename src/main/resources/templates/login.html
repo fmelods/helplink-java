@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments/header :: header"></head>
+
+<body class="d-flex align-items-center justify-content-center bg-light" style="height:100vh;">
+
+<style>
+    .btn-disabled {
+        opacity: .55 !important;
+        cursor: not-allowed !important;
+    }
+
+    .is-valid { border-color: #28a745 !important; }
+    .is-invalid { border-color: #dc3545 !important; }
+
+    .toggle-password {
+        cursor: pointer;
+        font-size: 18px;
+        margin-top: 6px;
+        display: inline-block;
+        color: #555;
+    }
+</style>
+
+<div class="container" style="max-width:420px;">
+    <div class="card shadow p-4 border-0">
+
+        <h3 class="text-center mb-4 fw-bold text-primary">
+            <i class="bi bi-heart-fill"></i> HelpLink
+        </h3>
+
+        <!-- MENSAGENS -->
+        <div th:if="${msg}" class="alert alert-success text-center fw-semibold">
+            <i class="bi bi-check-circle"></i> <span th:text="${msg}"></span>
+        </div>
+
+        <div th:if="${erro}" class="alert alert-danger text-center fw-semibold">
+            <i class="bi bi-exclamation-triangle"></i> <span th:text="${erro}"></span>
+        </div>
+
+        <form method="post" th:action="@{/auth/login}" th:object="${login}" id="formLogin">
+
+            <!-- EMAIL -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Email</label>
+                <input type="email" class="form-control" th:field="*{email}" required>
+                <div class="invalid-feedback">Digite um email válido.</div>
+            </div>
+
+            <!-- SENHA + OLHINHO EMBAIXO -->
+            <div class="mb-2">
+                <label class="form-label fw-semibold">Senha</label>
+                <input type="password" id="senhaLogin" class="form-control" th:field="*{senha}" required minlength="3">
+                <div class="invalid-feedback">Informe sua senha.</div>
+            </div>
+
+            <span class="toggle-password" onclick="toggleSenha('senhaLogin', this)">
+                <i class="bi bi-eye-slash"></i> Mostrar senha
+            </span>
+
+            <!-- BOTÃO SEM SUMIR -->
+            <button type="submit" id="btnLogin" class="btn hl-btn w-100 py-2 mt-3 btn-disabled">
+                Entrar
+            </button>
+
+            <p class="mt-3 text-center">
+                Não tem conta? <a th:href="@{/auth/register}">Registre-se</a>
+            </p>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById('formLogin');
+    const btn = document.getElementById('btnLogin');
+    const campos = form.querySelectorAll('input');
+
+    function validar() {
+        const valido = form.checkValidity();
+        btn.classList.toggle("btn-disabled", !valido);
+        btn.disabled = !valido;
+    }
+
+    campos.forEach(c => {
+        c.addEventListener('input', () => {
+            c.classList.toggle('is-invalid', !c.checkValidity());
+            c.classList.toggle('is-valid', c.checkValidity());
+            validar();
+        });
+    });
+
+    validar();
+
+    function toggleSenha(id, el) {
+        const input = document.getElementById(id);
+        const icon = el.querySelector("i");
+
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("bi-eye-slash");
+            icon.classList.add("bi-eye");
+        } else {
+            input.type = "password";
+            icon.classList.add("bi-eye-slash");
+            icon.classList.remove("bi-eye");
+        }
+    }
+</script>
+
+</body>
+</html>

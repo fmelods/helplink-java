@@ -8,6 +8,11 @@ import java.util.List;
 
 @Repository
 public interface VoluntariadoRepository extends JpaRepository<Voluntariado, Long> {
-    List<Voluntariado> findByUsuarioIdUsuario(Long usuarioId);
-    List<Voluntariado> findByInstituicaoIdInstituicao(Long instituicaoId);
+
+    List<Voluntariado> findByUsuario_IdUsuario(Long usuarioId);
+
+    List<Voluntariado> findByInstituicao_IdInstituicao(Long instituicaoId);
+
+    // DASHBOARD
+    long countByUsuario_IdUsuario(Long usuarioId);
 }
