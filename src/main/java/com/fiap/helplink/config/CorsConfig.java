@@ -15,24 +15,24 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
 
+                // 🔥 API
                 registry.addMapping("/api/**")
-                        .allowedOrigins("*")
+                        .allowedOrigins("*")              // pode restringir depois
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                         .allowedHeaders("*")
                         .exposedHeaders("Authorization")
                         .allowCredentials(false)
                         .maxAge(3600);
 
-                // Swagger
+                // Swagger UI
                 registry.addMapping("/swagger-ui/**")
                         .allowedOrigins("*")
-                        .allowedMethods("GET")
-                        .allowedHeaders("*");
+                        .allowedMethods("GET");
 
+                // OpenAPI JSON
                 registry.addMapping("/v3/api-docs/**")
                         .allowedOrigins("*")
-                        .allowedMethods("GET")
-                        .allowedHeaders("*");
+                        .allowedMethods("GET");
             }
         };
     }

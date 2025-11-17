@@ -7,6 +7,8 @@ import com.fiap.helplink.model.*;
 import com.fiap.helplink.repository.*;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,9 +51,10 @@ public class DoacaoService {
     }
 
     // ======================================================
-    // COUNT POR USUÁRIO (DASHBOARD)
+    // COUNT POR USUÁRIO (DASHBOARD) - COM CACHE
     // ======================================================
     @Transactional(readOnly = true)
+    @Cacheable(value = "totalDoacoesUsuario", key = "#usuarioId")
     public long countByUsuario(Long usuarioId) {
         return doacaoRepository.countByUsuario_IdUsuario(usuarioId);
     }
@@ -71,9 +74,10 @@ public class DoacaoService {
     }
 
     // ======================================================
-    // LISTAR POR USUÁRIO
+    // LISTAR POR USUÁRIO - COM CACHE
     // ======================================================
     @Transactional(readOnly = true)
+    @Cacheable(value = "doacoesUsuario", key = "#usuarioId")
     public List<DoacaoDTO> listarPorUsuario(Long usuarioId) {
         return doacaoRepository.findByUsuario_IdUsuario(usuarioId)
                 .stream()
@@ -85,6 +89,7 @@ public class DoacaoService {
     // CRIAR DOAÇÃO
     // ======================================================
     @Transactional
+    @CacheEvict(value = {"doacoesUsuario", "totalDoacoesUsuario"}, key = "#usuarioId")
     public DoacaoDTO criar(Long usuarioId, DoacaoCreateDTO dto) {
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -123,6 +128,7 @@ public class DoacaoService {
     // ATUALIZAR STATUS (API)
     // ======================================================
     @Transactional
+    @CacheEvict(value = {"doacoesUsuario", "totalDoacoesUsuario"}, allEntries = true)
     public DoacaoDTO atualizar(Long id, String status) {
 
         Doacao d = doacaoRepository.findById(id)
@@ -149,6 +155,7 @@ public class DoacaoService {
     // ATUALIZAR DOAÇÃO (SITE)
     // ======================================================
     @Transactional
+    @CacheEvict(value = {"doacoesUsuario", "totalDoacoesUsuario"}, allEntries = true)
     public DoacaoDTO atualizarDoacao(Long id, DoacaoDTO dto) {
 
         Doacao d = doacaoRepository.findById(id)
@@ -183,6 +190,7 @@ public class DoacaoService {
     // EXCLUIR
     // ======================================================
     @Transactional
+    @CacheEvict(value = {"doacoesUsuario", "totalDoacoesUsuario"}, allEntries = true)
     public void excluir(Long id) {
 
         Doacao d = doacaoRepository.findById(id)

@@ -9,6 +9,8 @@ import com.fiap.helplink.repository.ItemRepository;
 import com.fiap.helplink.repository.UsuarioRepository;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,9 +34,6 @@ public class ItemService {
         this.categoriaRepository = categoriaRepository;
     }
 
-    // ============================
-    // LISTAR TODOS
-    // ============================
     @Transactional(readOnly = true)
     public List<ItemDTO> listar() {
         return itemRepository.findAll()
@@ -43,9 +42,13 @@ public class ItemService {
                 .collect(Collectors.toList());
     }
 
-    // ============================
-    // LISTAR POR USUÁRIO
-    // ============================
+    // NOVO: lista paginada
+    @Transactional(readOnly = true)
+    public Page<ItemDTO> listarPaginado(Pageable pageable) {
+        return itemRepository.findAll(pageable)
+                .map(this::toDTO);
+    }
+
     @Transactional(readOnly = true)
     public List<ItemDTO> listarPorUsuario(Long usuarioId) {
         return itemRepository.findByUsuario_IdUsuario(usuarioId)
@@ -54,17 +57,11 @@ public class ItemService {
                 .collect(Collectors.toList());
     }
 
-    // ============================
-    // CONTADOR PARA DASHBOARD
-    // ============================
     @Transactional(readOnly = true)
     public long countByUsuario(Long usuarioId) {
         return itemRepository.countByUsuario_IdUsuario(usuarioId);
     }
 
-    // ============================
-    // BUSCAR POR ID
-    // ============================
     @Transactional(readOnly = true)
     public ItemDTO buscar(Long id) {
         Item item = itemRepository.findById(id)
@@ -72,9 +69,6 @@ public class ItemService {
         return toDTO(item);
     }
 
-    // ============================
-    // CRIAR
-    // ============================
     @Transactional
     public ItemDTO criar(Long usuarioId, ItemDTO dto) {
 
@@ -95,38 +89,31 @@ public class ItemService {
         return toDTO(itemRepository.save(item));
     }
 
-    // ============================
-    // ATUALIZAR  (NOVO FORMATO)
-    // ============================
     @Transactional
-    public ItemDTO atualizar(Long id, Long usuarioId, ItemDTO dto) {
+    public ItemDTO atualizar(Long usuarioId, Long itemId, ItemDTO dto) {
 
-        Item item = itemRepository.findById(id)
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+
+        Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new EntityNotFoundException("Item não encontrado"));
 
-        // Garante que o item pertence ao usuário (opcional porém correto)
-        if (!item.getUsuario().getIdUsuario().equals(usuarioId)) {
-            throw new RuntimeException("Este item não pertence ao usuário informado");
+        if (!item.getUsuario().getIdUsuario().equals(usuario.getIdUsuario())) {
+            throw new IllegalArgumentException("Item não pertence a este usuário");
         }
 
-        // Atualiza categoria, se alterada
-        if (dto.getCategoriaId() != null) {
-            Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
-                    .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada"));
-            item.setCategoria(categoria);
-        }
+        Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
+                .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada"));
 
         item.setTitulo(dto.getTitulo());
         item.setEstadoConservacao(dto.getEstadoConservacao());
         item.setFotoUrl(dto.getFotoUrl());
         item.setDescricao(dto.getDescricao());
+        item.setCategoria(categoria);
 
         return toDTO(itemRepository.save(item));
     }
 
-    // ============================
-    // EXCLUIR
-    // ============================
     @Transactional
     public void excluir(Long id) {
         if (!itemRepository.existsById(id)) {
@@ -135,9 +122,6 @@ public class ItemService {
         itemRepository.deleteById(id);
     }
 
-    // ============================
-    // CONVERTER PARA DTO
-    // ============================
     private ItemDTO toDTO(Item item) {
         ItemDTO dto = new ItemDTO();
         dto.setIdItem(item.getIdItem());

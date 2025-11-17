@@ -5,6 +5,8 @@ import com.fiap.helplink.model.Instituicao;
 import com.fiap.helplink.repository.InstituicaoRepository;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +24,10 @@ public class InstituicaoService {
     }
 
     /* ============================================================
-       LISTAR TODAS
+       LISTAR TODAS (COM CACHE)
      ============================================================ */
     @Transactional(readOnly = true)
+    @Cacheable("instituicoes")
     public List<InstituicaoDTO> listar() {
         return instituicaoRepository.findAll()
                 .stream()
@@ -46,9 +49,9 @@ public class InstituicaoService {
        CRIAR NOVA INSTITUIÇÃO
      ============================================================ */
     @Transactional
+    @CacheEvict(value = "instituicoes", allEntries = true)
     public InstituicaoDTO criar(InstituicaoDTO dto) {
 
-        // Validação de CNPJ duplicado
         if (instituicaoRepository.existsByCnpj(dto.getCnpj())) {
             throw new DataIntegrityViolationException("Já existe uma instituição com este CNPJ.");
         }
@@ -63,12 +66,12 @@ public class InstituicaoService {
        ATUALIZAR INSTITUIÇÃO
      ============================================================ */
     @Transactional
+    @CacheEvict(value = "instituicoes", allEntries = true)
     public InstituicaoDTO atualizar(Long id, InstituicaoDTO dto) {
 
         Instituicao inst = instituicaoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Instituição não encontrada"));
 
-        // Validação de CNPJ duplicado em atualização
         boolean cnpjUsadoPorOutro =
                 instituicaoRepository.existsByCnpjAndIdInstituicaoNot(dto.getCnpj(), id);
 
@@ -85,6 +88,7 @@ public class InstituicaoService {
        EXCLUIR INSTITUIÇÃO
      ============================================================ */
     @Transactional
+    @CacheEvict(value = "instituicoes", allEntries = true)
     public void deletar(Long id) {
 
         Instituicao inst = instituicaoRepository.findById(id)
@@ -93,7 +97,6 @@ public class InstituicaoService {
         try {
             instituicaoRepository.delete(inst);
         } catch (DataIntegrityViolationException e) {
-            // Aqui pega FK das doações
             throw new DataIntegrityViolationException(
                     "Não é possível excluir esta instituição pois existem doações vinculadas.");
         }

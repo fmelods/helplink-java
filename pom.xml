@@ -15,25 +15,14 @@
     <groupId>com.fiap</groupId>
     <artifactId>helplink-api</artifactId>
     <version>1.0.0</version>
-    <name>HelpLink API</name>
-    <description>API REST - Plataforma de doações</description>
 
-    <!-- ===================== -->
-    <!-- PROPRIEDADES GERAIS   -->
-    <!-- ===================== -->
     <properties>
         <java.version>21</java.version>
-        <lombok.version>1.18.34</lombok.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
-    <!-- ===================== -->
-    <!-- DEPENDÊNCIAS          -->
-    <!-- ===================== -->
     <dependencies>
 
-        <!-- Web -->
+        <!-- WEB -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -45,20 +34,44 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <!-- Security -->
+        <!-- SECURITY -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-        <!-- Oracle -->
+        <!-- THYMELEAF -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+        <!-- VALIDATION -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- CACHING -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+
+        <!-- AMQP (RabbitMQ) — SEM VERSION -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
+        <!-- ORACLE -->
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
             <artifactId>ojdbc11</artifactId>
             <version>21.9.0.0</version>
         </dependency>
 
-        <!-- JWT 0.11.5 (versão estável e recomendada) -->
+        <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -79,74 +92,26 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Swagger / OpenAPI -->
+        <!-- SWAGGER -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.0.2</version>
         </dependency>
 
-        <!-- Validation -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
-
-        <!-- Lombok -->
+        <!-- LOMBOK -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>provided</scope>
+            <optional>true</optional>
         </dependency>
 
-        <!-- Test -->
+        <!-- TEST -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Thymeleaf (necessário para carregar páginas HTML) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
-        </dependency>
-
-
     </dependencies>
-
-    <!-- ===================== -->
-    <!-- BUILD / COMPILER      -->
-    <!-- ===================== -->
-    <build>
-        <plugins>
-
-            <!-- Compilador Java -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
-
-            <!-- Plugin Spring Boot -->
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-
-        </plugins>
-    </build>
-
 </project>
