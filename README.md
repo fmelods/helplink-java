@@ -33,6 +33,7 @@ helpLink
 - Swagger / OpenAPI
 - PostgreSQL
 - Thymeleaf
+- Ollama (IA)
 
 ## 🔐 Segurança (JWT)
 - Login via token
@@ -80,6 +81,9 @@ Relacionamentos:
 - 1 Doação → 1 Impacto
 
 ## 📚 Endpoints Principais
+### AI
+- POST `/api/ai`
+
 ### Autenticação
 - POST `/auth/login`
 - POST `/auth/registrar`
@@ -110,6 +114,12 @@ Execute:
 ```
 mvn spring-boot:run
 ```
+
+Acesse a Aplicação Web:
+```
+http://localhost:8080
+```
+
 
 Acesse o Swagger:
 ```
