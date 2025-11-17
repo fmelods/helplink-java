@@ -86,10 +86,11 @@ public class ItemControllerSite {
 
         } else { // ATUALIZAÇÃO
 
+            // 🚨 CORREÇÃO APLICADA AQUI! 🚨
             itemService.atualizar(
-                    dto.getIdItem(),          // ID do item
-                    usuario.getIdUsuario(),   // ID do usuário logado
-                    dto                       // Dados do formulário
+                    usuario.getIdUsuario(),   // CORRETO → Primeiro ID do usuário logado
+                    dto.getIdItem(),          // CORRETO → Depois o ID do item sendo atualizado
+                    dto
             );
         }
 
