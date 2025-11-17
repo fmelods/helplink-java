@@ -39,9 +39,10 @@ public class DoacaoService {
         this.impactoRepository = impactoRepository;
     }
 
-    // ======================================================
-    // LISTAR TODAS (API)
-    // ======================================================
+    /* =====================================================
+                     LISTAGENS / BUSCAS
+    ===================================================== */
+
     @Transactional(readOnly = true)
     public List<DoacaoDTO> listarTodas() {
         return doacaoRepository.findAll()
@@ -50,18 +51,12 @@ public class DoacaoService {
                 .collect(Collectors.toList());
     }
 
-    // ======================================================
-    // COUNT POR USUÁRIO (DASHBOARD) - COM CACHE
-    // ======================================================
     @Transactional(readOnly = true)
     @Cacheable(value = "totalDoacoesUsuario", key = "#usuarioId")
     public long countByUsuario(Long usuarioId) {
         return doacaoRepository.countByUsuario_IdUsuario(usuarioId);
     }
 
-    // ======================================================
-    // BUSCAR DOAÇÃO
-    // ======================================================
     @Transactional(readOnly = true)
     public DoacaoDTO buscar(Long id) {
         Doacao d = doacaoRepository.findById(id)
@@ -73,9 +68,6 @@ public class DoacaoService {
         return toDTO(d);
     }
 
-    // ======================================================
-    // LISTAR POR USUÁRIO - COM CACHE
-    // ======================================================
     @Transactional(readOnly = true)
     @Cacheable(value = "doacoesUsuario", key = "#usuarioId")
     public List<DoacaoDTO> listarPorUsuario(Long usuarioId) {
@@ -85,9 +77,10 @@ public class DoacaoService {
                 .collect(Collectors.toList());
     }
 
-    // ======================================================
-    // CRIAR DOAÇÃO
-    // ======================================================
+    /* =====================================================
+                     CRIAÇÃO DA DOAÇÃO
+    ===================================================== */
+
     @Transactional
     @CacheEvict(value = {"doacoesUsuario", "totalDoacoesUsuario"}, key = "#usuarioId")
     public DoacaoDTO criar(Long usuarioId, DoacaoCreateDTO dto) {
@@ -101,10 +94,13 @@ public class DoacaoService {
         Doacao doacao = new Doacao();
         doacao.setUsuario(usuario);
         doacao.setInstituicao(instituicao);
-        doacao.setStatus("ABERTA");
+        doacao.setStatus(dto.getStatus().toUpperCase());
         doacao.setDtSolicitacao(LocalDateTime.now());
 
-        // ITEM
+        if (dto.getStatus().equalsIgnoreCase("CONCLUIDA")) {
+            doacao.setDtConfirmacao(LocalDateTime.now());
+        }
+
         DoacaoItem item = new DoacaoItem();
         item.setDoacao(doacao);
         item.setDescricao(dto.getItemDescricao());
@@ -112,48 +108,22 @@ public class DoacaoService {
 
         doacao.setDoacaoItens(new ArrayList<>(List.of(item)));
 
-        // IMPACTO
-        Impacto impacto = new Impacto();
-        impacto.setDoacao(doacao);
-        impacto.setPontuacao(10.0);
-        impacto.setObservacao("impacto padrão");
-
-        doacao.setImpacto(impacto);
+        if (dto.getStatus().equalsIgnoreCase("CONCLUIDA")) {
+            Impacto impacto = new Impacto();
+            impacto.setDoacao(doacao);
+            impacto.setPontuacao(10.0);
+            impacto.setObservacao("impacto padrão");
+            doacao.setImpacto(impacto);
+        }
 
         doacaoRepository.save(doacao);
         return toDTO(doacao);
     }
 
-    // ======================================================
-    // ATUALIZAR STATUS (API)
-    // ======================================================
-    @Transactional
-    @CacheEvict(value = {"doacoesUsuario", "totalDoacoesUsuario"}, allEntries = true)
-    public DoacaoDTO atualizar(Long id, String status) {
+    /* =====================================================
+                ATUALIZAÇÃO PARA O SITE
+    ===================================================== */
 
-        Doacao d = doacaoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Doação não encontrada"));
-
-        String st = status.toUpperCase();
-
-        if (!List.of("ABERTA", "CONCLUIDA", "CANCELADA").contains(st)) {
-            throw new IllegalArgumentException("Status inválido");
-        }
-
-        d.setStatus(st);
-
-        if (st.equals("CONCLUIDA")) {
-            d.setDtConfirmacao(LocalDateTime.now());
-        } else if (st.equals("ABERTA")) {
-            d.setDtConfirmacao(null);
-        }
-
-        return toDTO(doacaoRepository.save(d));
-    }
-
-    // ======================================================
-    // ATUALIZAR DOAÇÃO (SITE)
-    // ======================================================
     @Transactional
     @CacheEvict(value = {"doacoesUsuario", "totalDoacoesUsuario"}, allEntries = true)
     public DoacaoDTO atualizarDoacao(Long id, DoacaoDTO dto) {
@@ -170,12 +140,10 @@ public class DoacaoService {
         if (dto.getItemDescricao() != null && !dto.getItemDescricao().isBlank()) {
 
             if (d.getDoacaoItens().isEmpty()) {
-
                 DoacaoItem novo = new DoacaoItem();
                 novo.setDoacao(d);
                 novo.setDescricao(dto.getItemDescricao());
                 novo.setQtde(1.0);
-
                 d.getDoacaoItens().add(novo);
 
             } else {
@@ -183,12 +151,86 @@ public class DoacaoService {
             }
         }
 
+        if (dto.getStatus() != null) {
+            String status = dto.getStatus().toUpperCase();
+            d.setStatus(status);
+
+            switch (status) {
+                case "CONCLUIDA" -> {
+                    d.setDtConfirmacao(LocalDateTime.now());
+
+                    if (d.getImpacto() == null) {
+                        Impacto impacto = new Impacto();
+                        impacto.setDoacao(d);
+                        impacto.setPontuacao(10.0);
+                        impacto.setObservacao("impacto padrão");
+                        d.setImpacto(impacto);
+                    }
+                }
+
+                case "CANCELADA" -> {
+                    d.setDtConfirmacao(null);
+                    d.setImpacto(null);
+                }
+
+                case "ABERTA" -> {
+                    d.setDtConfirmacao(null);
+                }
+            }
+        }
+
         return toDTO(doacaoRepository.save(d));
     }
 
-    // ======================================================
-    // EXCLUIR
-    // ======================================================
+    /* =====================================================
+                ATUALIZAÇÃO PARA API (NOVO)
+    ===================================================== */
+
+    @Transactional
+    @CacheEvict(value = {"doacoesUsuario", "totalDoacoesUsuario"}, allEntries = true)
+    public DoacaoDTO atualizar(Long id, String status) {
+
+        Doacao d = doacaoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Doação não encontrada"));
+
+        String st = status.toUpperCase();
+
+        if (!List.of("ABERTA", "CONCLUIDA", "CANCELADA").contains(st)) {
+            throw new IllegalArgumentException("Status inválido");
+        }
+
+        d.setStatus(st);
+
+        switch (st) {
+            case "CONCLUIDA" -> {
+                d.setDtConfirmacao(LocalDateTime.now());
+
+                if (d.getImpacto() == null) {
+                    Impacto impacto = new Impacto();
+                    impacto.setDoacao(d);
+                    impacto.setPontuacao(10.0);
+                    impacto.setObservacao("impacto padrão");
+                    d.setImpacto(impacto);
+                }
+            }
+
+            case "CANCELADA" -> {
+                d.setDtConfirmacao(null);
+                d.setImpacto(null);
+            }
+
+            case "ABERTA" -> {
+                d.setDtConfirmacao(null);
+            }
+        }
+
+        return toDTO(doacaoRepository.save(d));
+    }
+
+    /* =====================================================
+                        EXCLUSÃO
+    ===================================================== */
+
     @Transactional
     @CacheEvict(value = {"doacoesUsuario", "totalDoacoesUsuario"}, allEntries = true)
     public void excluir(Long id) {
@@ -203,9 +245,10 @@ public class DoacaoService {
         doacaoRepository.delete(d);
     }
 
-    // ======================================================
-    // DTO
-    // ======================================================
+    /* =====================================================
+                  CONVERSÃO PARA DTO
+    ===================================================== */
+
     private DoacaoDTO toDTO(Doacao d) {
 
         DoacaoDTO dto = new DoacaoDTO();

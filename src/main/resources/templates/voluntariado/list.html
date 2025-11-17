@@ -32,25 +32,24 @@
 
     <tbody>
     <tr th:each="v : ${voluntariados}">
-      <td th:text="${#temporals.format(v.dtParticipacao, 'dd/MM/yyyy')}">10/03/2025</td>
-      <td th:text="${v.horasDedicadas + 'h'}">5h</td>
-      <td th:text="${v.habilidades}">Organização</td>
-      <td th:text="${v.instituicaoNome}">ONG 3</td>
+      <!-- AQUI MOSTRA A DATA ORIGINAL da participação -->
+      <td th:text="${#temporals.format(v.dtParticipacao, 'dd/MM/yyyy')}"></td>
+
+      <td th:text="${v.horasDedicadas + 'h'}"></td>
+      <td th:text="${v.habilidades}"></td>
+      <td th:text="${v.instituicaoNome}"></td>
 
       <td class="text-center">
-        <!-- Detalhes -->
         <a class="btn btn-sm btn-outline-primary"
            th:href="@{'/voluntariado/' + ${v.idVoluntariado}}">
           <i class="bi bi-search"></i>
         </a>
 
-        <!-- Editar -->
         <a class="btn btn-sm btn-outline-warning ms-1"
            th:href="@{'/voluntariado/' + ${v.idVoluntariado} + '/editar'}">
           <i class="bi bi-pencil"></i>
         </a>
 
-        <!-- Excluir -->
         <a class="btn btn-sm btn-outline-danger ms-1"
            th:href="@{'/voluntariado/' + ${v.idVoluntariado} + '/excluir'}"
            onclick="return confirm('Deseja remover este registro?')">

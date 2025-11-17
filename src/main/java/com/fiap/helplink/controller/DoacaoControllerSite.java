@@ -23,9 +23,7 @@ public class DoacaoControllerSite {
         return (Usuario) session.getAttribute("usuarioLogado");
     }
 
-    // ============================================================
     // LISTAR DOAÇÕES DO USUÁRIO
-    // ============================================================
     @GetMapping
     public String listar(Model model, HttpSession session) {
         Usuario usuario = validarSessao(session);
@@ -35,9 +33,7 @@ public class DoacaoControllerSite {
         return "doacoes/list";
     }
 
-    // ============================================================
     // NOVA DOAÇÃO
-    // ============================================================
     @GetMapping("/nova")
     public String nova(Model model, HttpSession session) {
         Usuario usuario = validarSessao(session);
@@ -48,9 +44,7 @@ public class DoacaoControllerSite {
         return "doacoes/form";
     }
 
-    // ============================================================
     // SALVAR NOVA DOAÇÃO
-    // ============================================================
     @PostMapping("/salvar")
     public String salvar(@ModelAttribute("form") DoacaoCreateDTO dto,
                          HttpSession session,
@@ -59,7 +53,6 @@ public class DoacaoControllerSite {
         Usuario usuario = validarSessao(session);
         if (usuario == null) return "redirect:/auth/login";
 
-        // Validação do campo itemDescrição
         if (dto.getItemDescricao() == null || dto.getItemDescricao().isBlank()) {
             model.addAttribute("erro", "Descreva o item que deseja doar.");
             model.addAttribute("instituicoes", instituicaoService.listar());
@@ -70,12 +63,9 @@ public class DoacaoControllerSite {
         return "redirect:/doacoes";
     }
 
-    // ============================================================
-    // DETALHES DA DOAÇÃO
-    // ============================================================
+    // DETALHES
     @GetMapping("/{id}")
     public String detalhes(@PathVariable Long id, Model model, HttpSession session) {
-
         Usuario usuario = validarSessao(session);
         if (usuario == null) return "redirect:/auth/login";
 
@@ -83,9 +73,7 @@ public class DoacaoControllerSite {
         return "doacoes/detalhes";
     }
 
-    // ============================================================
-    // EDITAR
-    // ============================================================
+    // EDITAR DOAÇÃO
     @GetMapping("/{id}/editar")
     public String editar(@PathVariable Long id, Model model, HttpSession session) {
 
@@ -100,9 +88,7 @@ public class DoacaoControllerSite {
         return "doacoes/form-editar";
     }
 
-    // ============================================================
     // ATUALIZAR DOAÇÃO
-    // ============================================================
     @PostMapping("/{id}/atualizar")
     public String atualizar(@PathVariable Long id,
                             @ModelAttribute("form") DoacaoDTO dto,
@@ -112,7 +98,6 @@ public class DoacaoControllerSite {
         Usuario usuario = validarSessao(session);
         if (usuario == null) return "redirect:/auth/login";
 
-        // Validação
         if (dto.getItemDescricao() == null || dto.getItemDescricao().isBlank()) {
             model.addAttribute("erro", "A descrição do item não pode estar vazia.");
             model.addAttribute("instituicoes", instituicaoService.listar());
@@ -123,12 +108,9 @@ public class DoacaoControllerSite {
         return "redirect:/doacoes";
     }
 
-    // ============================================================
     // EXCLUIR
-    // ============================================================
     @GetMapping("/{id}/excluir")
     public String excluir(@PathVariable Long id, HttpSession session) {
-
         Usuario usuario = validarSessao(session);
         if (usuario == null) return "redirect:/auth/login";
 

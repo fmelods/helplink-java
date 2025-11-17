@@ -42,13 +42,14 @@ public class DoacaoController {
     public ResponseEntity<?> buscarPorId(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(doacaoService.buscar(id));
-        } catch (EntityNotFoundException e) {
+        }
+        catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Doação não encontrada");
         }
     }
 
-    // CRIAR NOVA
+    // CRIAR NOVA DOAÇÃO (API)
     @PostMapping
     @Operation(summary = "Criar nova doação")
     public ResponseEntity<?> criar(
@@ -58,42 +59,42 @@ public class DoacaoController {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(doacaoService.criar(usuarioId, dto));
-
-        } catch (EntityNotFoundException e) {
+        }
+        catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Usuário ou instituição não encontrados");
         }
     }
 
-    // ALTERAR STATUS
+    // ATUALIZAR STATUS (API)
     @PutMapping("/{id}/status")
-    @Operation(summary = "Atualizar status da doação")
+    @Operation(summary = "Atualizar status da doação (ABERTA, CONCLUIDA, CANCELADA)")
     public ResponseEntity<?> atualizarStatus(
             @PathVariable Long id,
             @RequestParam String status) {
 
         try {
             return ResponseEntity.ok(doacaoService.atualizar(id, status));
-
-        } catch (EntityNotFoundException e) {
+        }
+        catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Doação não encontrada");
-
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Status inválido. Use: ABERTA, CONCLUIDA ou CANCELADA");
         }
     }
 
-    // EXCLUIR
+    // EXCLUIR DOAÇÃO
     @DeleteMapping("/{id}")
     @Operation(summary = "Excluir doação")
     public ResponseEntity<?> deletar(@PathVariable Long id) {
         try {
             doacaoService.excluir(id);
             return ResponseEntity.noContent().build();
-
-        } catch (EntityNotFoundException e) {
+        }
+        catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Doação não encontrada");
         }

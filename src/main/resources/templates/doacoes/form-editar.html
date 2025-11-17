@@ -31,9 +31,7 @@
                 <select class="form-select form-select-lg"
                         th:field="*{instituicaoId}"
                         required>
-
                     <option value="">Selecione...</option>
-
                     <option th:each="inst : ${instituicoes}"
                             th:value="${inst.idInstituicao}"
                             th:text="${inst.nome}">
@@ -56,23 +54,34 @@
                 </div>
             </div>
 
-            <!-- Botões lado a lado -->
-            <div class="d-flex gap-2 mt-4">
+            <!-- STATUS -->
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Status</label>
+                <select class="form-select form-select-lg"
+                        th:field="*{status}"
+                        required>
 
-                <!-- Botão Voltar -->
+                    <option value="">Selecione o Status...</option>
+                    <option value="ABERTA">Aberta</option>
+                    <option value="CONCLUIDA">Concluída</option>
+                    <option value="CANCELADA">Cancelada</option>
+
+                </select>
+            </div>
+
+            <!-- Botões -->
+            <div class="d-flex gap-2 mt-4">
                 <a class="btn btn-secondary w-50 d-flex align-items-center justify-content-center gap-1"
                    th:href="@{/doacoes}">
                     <i class="bi bi-arrow-left"></i>
                     Voltar
                 </a>
 
-                <!-- Botão Atualizar -->
                 <button type="submit"
                         class="btn hl-btn w-50 d-flex align-items-center justify-content-center gap-2">
                     Atualizar
                     <i class="bi bi-check-lg"></i>
                 </button>
-
             </div>
 
         </form>

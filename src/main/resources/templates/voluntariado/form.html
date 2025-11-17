@@ -22,10 +22,14 @@
 
       <input type="hidden" th:field="*{idVoluntariado}"/>
 
-      <div class="mb-3">
+      <!-- DATA APARECE APENAS NO REGISTRO -->
+      <div class="mb-3" th:if="${voluntariado.idVoluntariado == null}">
         <label class="form-label">Data da participação</label>
+
         <input type="date" class="form-control"
-               th:field="*{dtParticipacao}" required>
+               th:field="*{dtParticipacao}"
+               th:max="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
+               required>
       </div>
 
       <div class="mb-3">
@@ -47,19 +51,17 @@
           <option value="">Selecione</option>
           <option th:each="inst : ${instituicoes}"
                   th:value="${inst.idInstituicao}"
-                  th:text="${inst.nome}"></option>
+                  th:text="${inst.nome}">
+          </option>
         </select>
       </div>
 
-      <!-- BOTÕES LADO A LADO -->
       <div class="d-flex justify-content-between gap-2 mt-4">
 
-        <!-- Botão Voltar -->
         <a th:href="@{/voluntariado}" class="btn btn-secondary w-50">
           <i class="bi bi-arrow-left-circle"></i> Voltar
         </a>
 
-        <!-- Botão Salvar/Atualizar -->
         <button type="submit" class="btn hl-btn w-50">
           <span th:text="${voluntariado.idVoluntariado == null ? 'Salvar' : 'Atualizar'}"></span>
           <i class="bi bi-check-circle"></i>
