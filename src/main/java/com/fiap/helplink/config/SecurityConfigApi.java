@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @RequiredArgsConstructor
@@ -38,6 +39,7 @@ public class SecurityConfigApi {
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
+                        // LIBERADOS
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/swagger-ui/**",
@@ -45,6 +47,11 @@ public class SecurityConfigApi {
                                 "/v3/api-docs/**",
                                 "/webjars/**"
                         ).permitAll()
+
+                        // 👉 CADASTRO DE USUÁRIO (SEM LOGIN)
+                        .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll()
+
+                        // PROTEGE O RESTO
                         .anyRequest().authenticated()
                 )
 
