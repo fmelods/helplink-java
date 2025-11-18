@@ -58,7 +58,7 @@
             <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
 
-        <!-- AMQP (RabbitMQ) — SEM VERSION -->
+        <!-- AMQP -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
@@ -114,4 +114,24 @@
         </dependency>
 
     </dependencies>
+
+    <!-- ============================================================= -->
+    <!-- BUILD — ESSENCIAL PARA GERAR O JAR EXECUTÁVEL DO SPRING BOOT -->
+    <!-- ============================================================= -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

@@ -4,28 +4,25 @@
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 
-# Copia o pom.xml primeiro para resolver dependências
+# Copiar pom.xml e baixar dependências
 COPY pom.xml .
-RUN mvn dependency:resolve
+RUN mvn -q dependency:go-offline
 
-# Copia o código-fonte
+# Copiar todo o projeto
 COPY src ./src
 
-# Build do jar
+# Build (gera o jar executável)
 RUN mvn clean package -DskipTests
 
-
 # ============================
-# 2. ETAPA DE EXECUÇÃO (JDK)
+# 2. ETAPA DE EXECUÇÃO
 # ============================
 FROM eclipse-temurin:21-jdk
 WORKDIR /app
 
-# Copia o jar gerado
+# Copiar o JAR gerado
 COPY --from=build /app/target/helplink-api-1.0.0.jar app.jar
 
-# Porta padrão da API
 EXPOSE 8080
 
-# ENTRYPOINT para rodar
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
